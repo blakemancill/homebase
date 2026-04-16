@@ -1,6 +1,6 @@
+use crate::templates::layout::base_layout;
 use axum::http::HeaderMap;
 use maud::Markup;
-use crate::templates::layout::base_layout;
 
 // returns true if the request came from htmx
 pub fn is_htmx_request(headers: &HeaderMap) -> bool {
