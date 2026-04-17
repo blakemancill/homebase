@@ -17,9 +17,15 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
                 title { (page_title) }
             }
             body .is-flex.is-flex-direction-column {
-                (render_navbar(current_path))
-                main .p-3 #main-content {
-                    (content)
+                div .columns.is-gapless style="min-height: 100vh;" {
+                    div .column .is-2 {
+                        (render_navbar(current_path))
+                    }
+                    div .column.is-flex.is-flex-direction-column {
+                        main #main-content .p-5.has-background-grey.is-flex-grow-1 {
+                            (content)
+                        }
+                    }
                 }
             }
         }
