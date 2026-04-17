@@ -8,6 +8,23 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
             head {
                 meta charset="utf-8";
 
+                style {
+                    "
+                    :root {
+                        --sidebar-bg: #d4ddd0;
+                        --content-bg: #f9f9f7;
+                    }
+                    @media (prefers-color-scheme: dark) {
+                        :root {
+                            --sidebar-bg: #1a1a1a;
+                            --content-bg: #242424;
+                        }
+                    }
+                    #sidebar { background-color: var(--sidebar-bg); }
+                    #main-content { background-color: var(--content-bg); }
+                    "
+                }
+
                 // Bulma
                 link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css";
 
@@ -22,7 +39,7 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
                         (render_navbar(current_path))
                     }
                     div .column.is-flex.is-flex-direction-column {
-                        main #main-content .p-5.has-background-grey.is-flex-grow-1 {
+                        main #main-content .p-5.is-flex-grow-1 {
                             (content)
                         }
                     }
