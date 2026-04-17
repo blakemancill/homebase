@@ -1,7 +1,7 @@
-use crate::templates::partials::render_sidebar;
+use crate::templates::partials::render_navbar;
 use maud::{DOCTYPE, Markup, html};
 
-pub fn base_layout(page_title: &str, content: Markup) -> Markup {
+pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Markup {
     html! {
         (DOCTYPE)
         html {
@@ -14,13 +14,10 @@ pub fn base_layout(page_title: &str, content: Markup) -> Markup {
                 // HTMX
                 script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" {}
 
-                // Alpine.js
-                script defer src="//unpkg.com/alpinejs" {}
-
                 title { (page_title) }
             }
             body .is-flex.is-flex-direction-column {
-                (render_sidebar())
+                (render_navbar(current_path))
                 main .p-3 #main-content {
                     (content)
                 }

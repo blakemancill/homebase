@@ -1,3 +1,3 @@
-pub mod sidebar;
+pub mod navbar;
 
-pub use sidebar::render_sidebar;
+pub use navbar::render_navbar;
