@@ -1,12 +1,5 @@
-use crate::templates::render_page_or_fragment;
-use axum::http::{HeaderMap, Uri};
-use maud::{Markup, html};
+use maud::{html, Markup};
 
-pub async fn render_dashboard(headers: HeaderMap, uri: Uri) -> Markup {
-    render_page_or_fragment(
-        &headers,
-        &uri,
-        "Dashboard",
-        html! { h3 { "Dashboard" } }
-    )
+pub fn render_dashboard() -> Markup {
+    html! { h3 { "Dashboard" } }
 }

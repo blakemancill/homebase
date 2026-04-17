@@ -1,16 +1,17 @@
 pub mod templates;
+pub mod handlers;
+pub mod errors;
 
-use crate::templates::pages::dashboard::render_dashboard;
+use crate::handlers::handlers::{dashboard, index};
 use anyhow::Context;
-use axum::Router;
 use axum::routing::get;
-use templates::pages::index::index;
+use axum::Router;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(index))
-        .route("/dashboard", get(render_dashboard));
+        .route("/dashboard", get(dashboard));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
