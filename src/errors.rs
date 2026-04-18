@@ -21,6 +21,7 @@ impl IntoResponse for AppError {
                 let content = html! {
                     div .notification.is-warning {
                         h1 { "404 - Page Not Found" }
+                        br
                         p { "The page you're looking for doesn't exist." }
                     }
                 };
@@ -33,6 +34,7 @@ impl IntoResponse for AppError {
                 let body = html! {
                     div .notification.is-danger {
                         h2 { "Error" }
+                        br
                         p { "Internal Server Error" }
                     }
                 };
