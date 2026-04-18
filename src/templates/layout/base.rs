@@ -33,7 +33,7 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
 
                 title { (page_title) }
             }
-            body .is-flex.is-flex-direction-column {
+            body .is-flex.is-flex-direction-column hx-boost="true" {
                 div .columns.is-gapless style="min-height: 100vh;" {
                     div .column .is-2 {
                         (render_navbar(current_path))
