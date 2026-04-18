@@ -13,6 +13,7 @@ pub fn render_page_or_fragment(headers: &HeaderMap, uri: &Uri, title: &str, cont
     let current_path = uri.path();
     if is_htmx_request(headers) {
         html! {
+            title { (title) }
             (content)
             (render_navbar(current_path))
         }
