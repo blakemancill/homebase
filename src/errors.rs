@@ -1,8 +1,8 @@
+use crate::templates::layout::base_layout;
 use axum::http::{StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use maud::html;
 use thiserror::Error;
-use crate::templates::layout::base_layout;
 
 #[derive(Debug, Error)]
 pub enum AppError {
@@ -17,7 +17,7 @@ impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         match self {
             // Renders a 404 page on Not Found error
-            AppError::NotFound( uri) => {
+            AppError::NotFound(uri) => {
                 tracing::warn!(path = %uri.path(), "404 not found");
                 let content = html! {
                     div .notification.is-warning {
@@ -26,7 +26,11 @@ impl IntoResponse for AppError {
                         p { "The page you're looking for doesn't exist." }
                     }
                 };
-                (StatusCode::NOT_FOUND, base_layout("Not Found", uri.path(), content)).into_response()
+                (
+                    StatusCode::NOT_FOUND,
+                    base_layout("Not Found", uri.path(), content),
+                )
+                    .into_response()
             }
 
             // Renders an error message on internal server error
@@ -39,7 +43,11 @@ impl IntoResponse for AppError {
                         p { "Internal Server Error" }
                     }
                 };
-                (StatusCode::INTERNAL_SERVER_ERROR, base_layout("Error", "/", content)).into_response()
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    base_layout("Error", "/", content),
+                )
+                    .into_response()
             }
         }
     }
