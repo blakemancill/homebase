@@ -18,6 +18,7 @@ impl IntoResponse for AppError {
         match self {
             // Renders a 404 page on Not Found error
             AppError::NotFound(headers, uri) => {
+                tracing::warn!(path = %uri.path(), "404 not found");
                 let content = html! {
                     div .notification.is-warning {
                         h1 { "404 - Page Not Found" }
@@ -30,7 +31,8 @@ impl IntoResponse for AppError {
             },
 
             // Renders an error message on internal server error
-            AppError::Internal(_) => {
+            AppError::Internal(e) => {
+                tracing::error!(error = %e, "Internal Server Error");
                 let body = html! {
                     div .notification.is-danger {
                         h2 { "Error" }
