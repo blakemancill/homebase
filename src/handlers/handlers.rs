@@ -14,3 +14,7 @@ pub async fn dashboard(headers: HeaderMap, uri: Uri) -> Result<Markup, AppError>
     let content = render_dashboard();
     Ok(render_page_or_fragment(&headers, &uri, "Dashboard", content))
 }
+
+pub async fn handle_404(headers: HeaderMap, uri: Uri) -> Result<Markup, AppError> {
+    Err(AppError::NotFound(headers, uri))
+}
