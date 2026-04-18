@@ -1,8 +1,8 @@
+use crate::templates::render_page_or_fragment;
 use axum::http::{HeaderMap, StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
 use maud::html;
 use thiserror::Error;
-use crate::templates::render_page_or_fragment;
 
 #[derive(Debug, Error)]
 pub enum AppError {
@@ -28,7 +28,7 @@ impl IntoResponse for AppError {
                 };
                 let page = render_page_or_fragment(&headers, &uri, "Not Found", content);
                 (StatusCode::NOT_FOUND, page).into_response()
-            },
+            }
 
             // Renders an error message on internal server error
             AppError::Internal(e) => {
