@@ -32,7 +32,7 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
                 script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" {}
 
                 // Hyperscript
-                script src="https://unpkg.com/hyperscript.org" {}
+                script src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.91/dist/_hyperscript.min.js" {}
 
                 title { (page_title) }
             }
