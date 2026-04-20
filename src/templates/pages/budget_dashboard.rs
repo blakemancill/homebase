@@ -12,12 +12,22 @@ pub fn render_budget_dashboard() -> Markup {
                             div .buttons.has-addons.is-centered {
                                 button
                                     .button.is-info.peer-toggle type="button"
-                                    _="on click remove .is-danger from .peer-toggle then add .is-info to me then set #entry-type.value to 'income'"
+                                    _=
+                                        r#"
+                                            on click remove .is-danger from .peer-toggle
+                                            then add .is-info to me
+                                            then set #entry-type.value to 'income'
+                                        "#
                                 { "Income" }
 
                                 button
                                     .button.peer-toggle type="button"
-                                    _="on click remove .is-info from .peer-toggle then add .is-danger to me then set #entry-type.value to 'expense'"
+                                    _=
+                                        r#"
+                                            on click remove .is-info from .peer-toggle
+                                            then add .is-danger to me
+                                            then set #entry-type.value to 'expense'
+                                        "#
                                 { "Expense" }
                             }
                             input #entry-type type="hidden" name="entry_type" value="income" {}
@@ -42,8 +52,21 @@ pub fn render_budget_dashboard() -> Markup {
                     }
                 }
             }
-            div .column {
+            div .column.is-narrow {
                 // Table
+                div .card.p-3 {
+                    table .table {
+                        thead {
+                            tr {
+                                th { "Label" }
+                                th { "Amount" }
+                            }
+                        }
+                        tbody {
+
+                        }
+                    }
+                }
             }
         }
     }
