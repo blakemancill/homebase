@@ -31,6 +31,9 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
                 // HTMX
                 script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" {}
 
+                // Hyperscript
+                script src="https://unpkg.com/hyperscript.org" {}
+
                 title { (page_title) }
             }
             body .is-flex.is-flex-direction-column hx-boost="true" {

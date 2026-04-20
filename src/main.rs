@@ -2,7 +2,7 @@ pub mod errors;
 pub mod handlers;
 pub mod templates;
 
-use crate::handlers::handlers::{dashboard, handle_404, index};
+use crate::handlers::handlers::{budget_dashboard, handle_404, index};
 use anyhow::Context;
 use axum::Router;
 use axum::routing::get;
@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(index))
-        .route("/dashboard", get(dashboard))
+        .route("/dashboard", get(budget_dashboard))
         .fallback(handle_404)
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
 
