@@ -36,7 +36,8 @@ pub fn render_budget_dashboard() -> Markup {
                             div .field {
                                 div .control {
                                     label .label for="label" { "Label" }
-                                    input .input type="text" name="label" autofocus placeholder="Label (e.g. Rent, Salary)" {}
+                                    input .input type="text" name="label" autofocus
+                                        placeholder="Label (e.g. Rent, Salary)" {}
                                 }
                             }
                             div .field {
