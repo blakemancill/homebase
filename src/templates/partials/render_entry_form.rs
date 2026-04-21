@@ -45,14 +45,22 @@ pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) ->
                     div .field {
                         div .control {
                             label .label for="label" { "Label" }
-                            input .input type="text" name="label"
-                                placeholder="Label (e.g. Rent, Salary)" {}
+                            input
+                                .input type="text" name="label"
+                                placeholder="Label (e.g. Rent, Salary)"
+                                required
+                                _="on invalid add .is-danger to me"
+                            {}
                         }
                     }
                     div .field {
                         div .control {
                             label .label for="amount" { "Amount" }
-                            input .input type="text" name="amount" placeholder="0.00" {}
+                            input
+                                .input type="text" name="amount" placeholder="0.00"
+                                required
+                                _="on invalid add .is-danger to me"
+                            {}
                         }
                     }
                 }
