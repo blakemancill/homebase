@@ -3,7 +3,8 @@ pub mod handlers;
 pub mod state;
 pub mod templates;
 
-use crate::handlers::handlers::{budget_dashboard, create_pay_period, handle_404, index};
+use crate::handlers::budget_handlers::{budget_dashboard, create_pay_period};
+use crate::handlers::handlers::{handle_404, index};
 use crate::state::ApplicationState;
 use anyhow::Context;
 use axum::Router;
