@@ -4,7 +4,29 @@ pub fn render_budget_dashboard() -> Markup {
     html! {
         div .columns {
             div .column.is-one-third {
-                // Form
+                // pay period input form
+                form {
+                    div .card {
+                        div .card-content {
+                            div .field {
+                                label { "Viewing Period" }
+                                div .control {
+                                    input .input type="date" name="start-date" {}
+                                }
+                                span .span { "To: "}
+                                div .control {
+                                    input .input type="date" name="end-date" {}
+                                }
+                            }
+                        }
+                        div .card-footer.m-5.p-3 {
+                            button .card-footer-item.button.is-danger.mr-1 type="reset" { "Reset" }
+                            button .card-footer-item.button.is-primary type="submit" { "Submit" }
+                        }
+                    }
+                }
+                br;
+                // Data Entry Form
                 form {
                     div .card {
                         div .card-content {
