@@ -9,6 +9,7 @@ pub fn render_entry_form(id: i64) -> Markup {
                     div .buttons.has-addons.is-centered {
                         button
                             .button.is-info.peer-toggle type="button"
+                            autofocus
                             _=
                                 r#"
                                     on click remove .is-danger from .peer-toggle

@@ -9,7 +9,7 @@ pub fn render_budget_dashboard() -> Markup {
                     div .card {
                         div .card-content {
                             div .field {
-                                label { "Viewing Period" }
+                                label { "Pay Period" }
                                 div .control {
                                     input .input type="date" name="start_date" autofocus {}
                                 }
