@@ -42,7 +42,11 @@ pub async fn create_pay_period(
     .map_err(|e| AppError::Internal(e.into()))?;
 
     let id = sqlx::query_scalar::<_, i64>(
-        "SELECT id FROM pay_period WHERE start_date = ? AND end_date = ?",
+        r#"
+                SELECT id
+                FROM pay_period
+                WHERE start_date = ? AND end_date = ?
+            "#,
     )
     .bind(form.start_date)
     .bind(form.end_date)
@@ -50,7 +54,7 @@ pub async fn create_pay_period(
     .await
     .map_err(|e| AppError::Internal(e.into()))?;
 
-    Ok(render_entry_form(id))
+    Ok(render_entry_form(id, form.start_date, form.end_date))
 }
 
 // Form shape

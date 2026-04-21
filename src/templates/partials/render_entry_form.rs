@@ -1,10 +1,20 @@
+use chrono::NaiveDate;
 use maud::{Markup, html};
 
-pub fn render_entry_form(id: i64) -> Markup {
+pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) -> Markup {
     html! {
         form {
             div .card {
                 div .card-content {
+                    div .card-header {
+                        p .card-header-title.is-centered {
+                            (format!(
+                                "{} to {}",
+                                start_date.format("%B %d, %Y"),
+                                end_date.format("%B %d, %Y")
+                            ))
+                        }
+                    }
                     // toggle buttons between income and expense
                     div .buttons.has-addons.is-centered {
                         button
