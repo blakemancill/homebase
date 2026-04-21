@@ -13,14 +13,14 @@ pub fn render_budget_dashboard() -> Markup {
                                 div .control {
                                     input
                                         .input type="date" name="start_date" autofocus required
-                                        _="on invalid add .is-danger to me"
+                                        _="on invalid add .is-danger to me on input remove .is-danger from me"
                                     {}
                                 }
                                 span .span { "To: "}
                                 div .control {
                                     input
                                         .input type="date" name="end_date" required
-                                        _="on invalid add .is-danger to me"
+                                        _="on invalid add .is-danger to me on input remove .is-danger from me"
                                     {}
                                 }
                             }

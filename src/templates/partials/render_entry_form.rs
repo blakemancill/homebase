@@ -49,7 +49,7 @@ pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) ->
                                 .input type="text" name="label"
                                 placeholder="Label (e.g. Rent, Salary)"
                                 required
-                                _="on invalid add .is-danger to me"
+                                _="on invalid add .is-danger to me on input remove .is-danger from me"
                             {}
                         }
                     }
@@ -59,7 +59,7 @@ pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) ->
                             input
                                 .input type="text" name="amount" placeholder="0.00"
                                 required
-                                _="on invalid add .is-danger to me"
+                                _="on invalid add .is-danger to me on input remove .is-danger from me"
                             {}
                         }
                     }
