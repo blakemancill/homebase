@@ -6,7 +6,8 @@ use crate::templates::pages::index::render_index;
 use crate::templates::partials::render_entry_form;
 use axum::extract::{Form, State};
 use axum::http::Uri;
-use maud::Markup;
+use chrono::NaiveDate;
+use maud::{html, Markup};
 
 pub async fn index(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout("Home", uri.path(), render_index()))
@@ -28,9 +29,17 @@ pub async fn create_pay_period(
     State(state): State<ApplicationState>,
     Form(form): Form<PayPeriodForm>,
 ) -> Result<Markup, AppError> {
+    if form.start_date >= form.end_date {
+        return Ok(html! {
+            div .notification.is-danger {
+                "Start date must be before end date."
+            }
+        });
+    }
+
     sqlx::query(
         r#"
-                INSERT INTO pay_period (start_date, end_date) VALUES (?, ?)
+                INSERT OR IGNORE INTO pay_period (start_date, end_date) VALUES (?, ?)
             "#,
     )
     .bind(&form.start_date)
@@ -53,6 +62,6 @@ pub async fn create_pay_period(
 
 #[derive(serde::Deserialize)]
 pub struct PayPeriodForm {
-    pub start_date: String,
-    pub end_date: String,
+    pub start_date: NaiveDate,
+    pub end_date: NaiveDate,
 }
