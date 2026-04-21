@@ -303,6 +303,7 @@ dependencies = [
  "anyhow",
  "axum",
  "maud",
+ "serde",
  "sqlx",
  "thiserror",
  "tokio",

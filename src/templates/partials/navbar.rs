@@ -1,4 +1,4 @@
-use maud::{Markup, html, PreEscaped};
+use maud::{Markup, PreEscaped, html};
 
 pub fn render_navbar(current_path: &str) -> Markup {
     html! {

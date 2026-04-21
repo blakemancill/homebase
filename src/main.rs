@@ -1,15 +1,15 @@
 pub mod errors;
 pub mod handlers;
-pub mod templates;
 pub mod state;
+pub mod templates;
 
-use crate::handlers::handlers::{budget_dashboard, handle_404, index};
+use crate::handlers::handlers::{budget_dashboard, create_pay_period, handle_404, index};
+use crate::state::ApplicationState;
 use anyhow::Context;
-use axum::routing::get;
 use axum::Router;
+use axum::routing::{get, post};
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
-use crate::state::ApplicationState;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -20,6 +20,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(index))
         .route("/dashboard", get(budget_dashboard))
+        .route("/pay-period", post(create_pay_period))
         .fallback(handle_404)
         .with_state(state)
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
