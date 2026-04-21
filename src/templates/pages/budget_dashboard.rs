@@ -26,7 +26,11 @@ pub fn render_budget_dashboard() -> Markup {
                             }
                         }
                         div .card-footer.m-5.p-3 {
-                            button .card-footer-item.button.is-danger.mr-1 type="reset" { "Reset" }
+                            button
+                                .card-footer-item.button.is-danger.mr-1
+                                type="reset"
+                                _="on click set #entry-form.innerHTML to ''"
+                            { "Reset" }
                             button .card-footer-item.button.is-primary type="submit" { "Submit" }
                         }
                     }
