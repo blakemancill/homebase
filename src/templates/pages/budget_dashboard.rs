@@ -11,11 +11,17 @@ pub fn render_budget_dashboard() -> Markup {
                             div .field {
                                 label { "Pay Period" }
                                 div .control {
-                                    input .input type="date" name="start_date" autofocus required {}
+                                    input
+                                        .input type="date" name="start_date" autofocus required
+                                        _="on invalid add .is-danger to me"
+                                    {}
                                 }
                                 span .span { "To: "}
                                 div .control {
-                                    input .input type="date" name="end_date" required {}
+                                    input
+                                        .input type="date" name="end_date" required
+                                        _="on invalid add .is-danger to me"
+                                    {}
                                 }
                             }
                         }
