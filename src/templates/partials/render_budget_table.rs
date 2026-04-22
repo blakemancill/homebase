@@ -1,7 +1,7 @@
 use crate::handlers::budget_handlers::BudgetEntry;
 use maud::{html, Markup};
 
-pub fn render_budget_table(entries: &[BudgetEntry]) -> Markup {
+pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
     let total_income: i64 = entries.iter()
         .filter(|e| e.entry_type == "income")
         .map(|e| e.amount)
@@ -15,7 +15,7 @@ pub fn render_budget_table(entries: &[BudgetEntry]) -> Markup {
     let remaining = total_income - total_expenses;
 
     html! {
-        div #budget-table .card.p-3 {
+        div #budget-table .card.p-3 hx-swap-oob=[oob.then_some("outerHTML")] {
             table .table.is-fullwidth {
                 thead {
                     tr {

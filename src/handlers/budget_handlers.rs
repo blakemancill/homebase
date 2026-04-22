@@ -56,7 +56,23 @@ pub async fn create_pay_period(
     .await
     .map_err(|e| AppError::Internal(e.into()))?;
 
-    Ok(render_entry_form(id, form.start_date, form.end_date))
+    let entries = sqlx::query_as::<_, BudgetEntry>(
+        "SELECT label, amount, entry_type FROM budget_entries WHERE pay_period_id = ?"
+    )
+    .bind(id)
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| AppError::Internal(e.into()))?;
+
+    Ok(
+        html! {
+            // primary: goes into hx-target #entry-form
+            (render_entry_form(id, form.start_date, form.end_date))
+
+            // oob swap: htmx puts this into #budget-table
+            (render_budget_table(&entries, true))
+        }
+    )
 }
 
 pub async fn create_budget_entry(
@@ -93,7 +109,7 @@ pub async fn create_budget_entry(
     .await
     .map_err(|e| AppError::Internal(e.into()))?;
 
-    Ok(render_budget_table(&entries))
+    Ok(render_budget_table(&entries, false))
 }
 
 // Form shapes
