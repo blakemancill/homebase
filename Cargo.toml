@@ -10,7 +10,7 @@ chrono = { version = "0.4.44", features = ["serde"] }
 maud = { version = "0.27.0", features = ["axum"] }
 rust_decimal = "1.41.0"
 serde = { version = "1.0.228", features = ["derive"] }
-sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono"] }
+sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate"] }
 thiserror = "2.0.18"
 tokio = { version = "1.52.0", features = ["full"] }
 tower = "0.5.3"

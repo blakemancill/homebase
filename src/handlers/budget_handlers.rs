@@ -1,5 +1,6 @@
 use crate::db::{get_entries_for_period, insert_budget_entry, upsert_pay_period};
 use crate::errors::AppError;
+use crate::models::EntryType;
 use crate::state::ApplicationState;
 use crate::templates::layout::base_layout;
 use crate::templates::pages::budget_dashboard::render_budget_dashboard;
@@ -11,7 +12,6 @@ use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
-use crate::models::EntryType;
 
 pub async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
