@@ -1,16 +1,16 @@
+use crate::db::get_entries_for_period;
 use crate::errors::AppError;
 use crate::state::ApplicationState;
 use crate::templates::layout::base_layout;
 use crate::templates::pages::budget_dashboard::render_budget_dashboard;
+use crate::templates::partials::render_budget_table::render_budget_table;
 use crate::templates::partials::render_entry_form;
-use axum::Form;
 use axum::extract::State;
 use axum::http::Uri;
+use axum::Form;
 use chrono::NaiveDate;
-use maud::{Markup, html};
+use maud::{html, Markup};
 use rust_decimal::Decimal;
-use crate::models::BudgetEntry;
-use crate::templates::partials::render_budget_table::render_budget_table;
 
 pub async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
@@ -57,13 +57,7 @@ pub async fn create_pay_period(
     .await
     .map_err(|e| AppError::Internal(e.into()))?;
 
-    let entries = sqlx::query_as::<_, BudgetEntry>(
-        "SELECT label, amount, entry_type FROM budget_entries WHERE pay_period_id = ?"
-    )
-    .bind(id)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| AppError::Internal(e.into()))?;
+    let entries = get_entries_for_period(&state.pool, id).await?;
 
     Ok(
         html! {
@@ -98,17 +92,7 @@ pub async fn create_budget_entry(
     .await
     .map_err(|e| AppError::Internal(e.into()))?;
 
-    let entries = sqlx::query_as::<_, BudgetEntry>(
-        r#"
-                SELECT label, amount, entry_type
-                FROM budget_entries
-                WHERE pay_period_id = ?
-            "#
-    )
-    .bind(&form.pay_period_id)
-    .fetch_all(&state.pool)
-    .await
-    .map_err(|e| AppError::Internal(e.into()))?;
+    let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
 
     Ok(render_budget_table(&entries, false))
 }

@@ -11,6 +11,9 @@ pub enum AppError {
 
     #[error("Internal Server Error")]
     Internal(#[from] anyhow::Error),
+
+    #[error("Database Error")]
+    Database(#[from] sqlx::Error),
 }
 
 impl IntoResponse for AppError {
@@ -34,21 +37,20 @@ impl IntoResponse for AppError {
             }
 
             // Renders an error message on internal server error
-            AppError::Internal(e) => {
-                tracing::error!(error = %e, "Internal Server Error");
-                let content = html! {
-                    div .notification.is-danger {
-                        h2 { "Error" }
-                        br
-                        p { "Internal Server Error" }
-                    }
-                };
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    base_layout("Error", "/", content),
-                )
-                    .into_response()
-            }
+            AppError::Internal(e) => internal_error(e.to_string()),
+            AppError::Database(e) => internal_error(e.to_string()),
         }
     }
+}
+
+fn internal_error(e: impl std::fmt::Display) -> Response {
+    tracing::error!(error = %e, "Internal Server Error");
+    let content = html! {
+        div .notification.is-danger {
+            h2 { "Error" }
+            br
+            p { "Internal Server Error" }
+        }
+    };
+    (StatusCode::INTERNAL_SERVER_ERROR, base_layout("Error", "/", content)).into_response()
 }
