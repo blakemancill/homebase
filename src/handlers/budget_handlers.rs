@@ -11,6 +11,7 @@ use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
+use crate::models::EntryType;
 
 pub async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
@@ -79,22 +80,6 @@ pub struct BudgetEntryForm {
     pay_period_id: i64,
     label: String,
     amount: String,
-}
-
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum EntryType {
-    Income,
-    Expense,
-}
-
-impl EntryType {
-    fn as_str(&self) -> &str {
-        match self {
-            EntryType::Income => "income",
-            EntryType::Expense => "expense",
-        }
-    }
 }
 
 // Helpers
