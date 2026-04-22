@@ -3,7 +3,11 @@ use maud::{Markup, html};
 
 pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) -> Markup {
     html! {
-        form hx-post="/budget-entry" hx-target="#budget-table" hx-swap="outerHTML" {
+        form
+            hx-post="/budget-entry"
+            hx-target="#budget-table"
+            hx-swap="outerHTML"
+            _="on htmx:afterRequest call me.reset() then send click to .peer-toggle.is-info" {
             div .card {
                 div .card-content {
                     div .card-header {
