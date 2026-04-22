@@ -3,7 +3,7 @@ pub mod handlers;
 pub mod state;
 pub mod templates;
 
-use crate::handlers::budget_handlers::{budget_dashboard, create_pay_period};
+use crate::handlers::budget_handlers::{budget_dashboard, create_budget_entry, create_pay_period};
 use crate::handlers::handlers::{handle_404, index};
 use crate::state::ApplicationState;
 use anyhow::Context;
@@ -22,6 +22,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/", get(index))
         .route("/dashboard", get(budget_dashboard))
         .route("/pay-period", post(create_pay_period))
+        .route("/budget-entry", post(create_budget_entry))
         .fallback(handle_404)
         .with_state(state)
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));

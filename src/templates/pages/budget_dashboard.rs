@@ -41,19 +41,7 @@ pub fn render_budget_dashboard() -> Markup {
             }
             div .column.is-narrow {
                 // Table
-                div .card.p-3 {
-                    table .table {
-                        thead {
-                            tr {
-                                th { "Label" }
-                                th { "Amount" }
-                            }
-                        }
-                        tbody {
-
-                        }
-                    }
-                }
+                div #budget-table {}
             }
         }
     }

@@ -3,7 +3,7 @@ use maud::{Markup, html};
 
 pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) -> Markup {
     html! {
-        form {
+        form hx-post="/budget-entry" hx-target="#budget-table" hx-swap="outerHTML" {
             div .card {
                 div .card-content {
                     div .card-header {

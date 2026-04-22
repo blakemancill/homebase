@@ -8,6 +8,8 @@ use axum::extract::State;
 use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
+use rust_decimal::Decimal;
+use crate::templates::partials::render_budget_table::render_budget_table;
 
 pub async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
@@ -57,9 +59,91 @@ pub async fn create_pay_period(
     Ok(render_entry_form(id, form.start_date, form.end_date))
 }
 
-// Form shape
+pub async fn create_budget_entry(
+    State(state): State<ApplicationState>,
+    Form(form): Form<BudgetEntryForm>,
+) -> Result<Markup, AppError> {
+    // convert amount into pennies for accuracy
+    let pennies = dollars_to_pennies(&form.amount)
+        .map_err(|e| AppError::Internal(e.into()))?;
+
+    sqlx::query(
+        r#"
+                INSERT INTO budget_entries (pay_period_id, label, amount, entry_type)
+                VALUES (?, ?, ?, ?)
+            "#
+    )
+    .bind(&form.pay_period_id)
+    .bind(&form.label)
+    .bind(pennies)
+    .bind(&form.entry_type.as_str())
+    .execute(&state.pool)
+    .await
+    .map_err(|e| AppError::Internal(e.into()))?;
+
+    let entries = sqlx::query_as::<_, BudgetEntry>(
+        r#"
+                SELECT label, amount, entry_type
+                FROM budget_entries
+                WHERE pay_period_id = ?
+            "#
+    )
+    .bind(&form.pay_period_id)
+    .fetch_all(&state.pool)
+    .await
+    .map_err(|e| AppError::Internal(e.into()))?;
+
+    Ok(render_budget_table(&entries))
+}
+
+// Form shapes
 #[derive(serde::Deserialize)]
 pub struct PayPeriodForm {
-    pub start_date: NaiveDate,
-    pub end_date: NaiveDate,
+    start_date: NaiveDate,
+    end_date: NaiveDate,
+}
+
+#[derive(serde::Deserialize)]
+pub struct BudgetEntryForm {
+    entry_type: EntryType,
+    pay_period_id: i64,
+    label: String,
+    amount: String,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum EntryType {
+    Income, Expense
+}
+
+impl EntryType {
+    fn as_str(&self) -> &str {
+        match self {
+            EntryType::Income => "income",
+            EntryType::Expense => "expense"
+        }
+    }
+}
+
+// Helpers
+#[derive(Debug, thiserror::Error)]
+pub enum BudgetError {
+    #[error("invalid amount: {0}")]
+    InvalidAmount(#[from] rust_decimal::Error),
+    #[error("amount out of range")]
+    AmountOutOfRange(#[from] std::num::TryFromIntError),
+}
+
+#[derive(sqlx::FromRow)]
+pub struct BudgetEntry {
+    pub label: String,
+    pub amount: i64,
+    pub entry_type: String,
+}
+
+fn dollars_to_pennies(s: &str) -> Result<i64, BudgetError> {
+    let d = s.parse::<Decimal>()?;
+    let pennies = (d * Decimal::from(100)).round();
+    Ok(pennies.try_into()?)
 }

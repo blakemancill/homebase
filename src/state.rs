@@ -24,7 +24,7 @@ impl ApplicationState {
 
         sqlx::query(
             r#"
-                CREATE TABLE IF NOT EXISTS entries (
+                CREATE TABLE IF NOT EXISTS budget_entries (
                     id INTEGER PRIMARY KEY,
                     pay_period_id INTEGER NOT NULL REFERENCES pay_period,
                     label TEXT NOT NULL,
