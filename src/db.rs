@@ -1,4 +1,4 @@
-use crate::models::BudgetEntry;
+use crate::models::{BudgetEntry, EntryType};
 use chrono::NaiveDate;
 use sqlx::SqlitePool;
 
@@ -8,7 +8,8 @@ pub async fn get_entries_for_period(
 ) -> sqlx::Result<Vec<BudgetEntry>> {
     sqlx::query_as!(
         BudgetEntry,
-        "SELECT label, amount, entry_type FROM budget_entries WHERE pay_period_id = ?",
+        r#"SELECT label, amount, entry_type as "entry_type: EntryType"
+           FROM budget_entries WHERE pay_period_id = ?"#,
         pay_period_id
     )
     .fetch_all(pool)
@@ -46,7 +47,7 @@ pub async fn insert_budget_entry(
     pay_period_id: i64,
     label: &str,
     amount: i64,
-    entry_type: &str,
+    entry_type: EntryType,
 ) -> sqlx::Result<()> {
     sqlx::query!(
         "INSERT INTO budget_entries (pay_period_id, label, amount, entry_type) VALUES (?, ?, ?, ?)",

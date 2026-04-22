@@ -1,16 +1,16 @@
-use crate::models::BudgetEntry;
+use crate::models::{BudgetEntry, EntryType};
 use maud::{Markup, html};
 
 pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
     let total_income: i64 = entries
         .iter()
-        .filter(|e| e.entry_type == "income")
+        .filter(|e| e.entry_type == EntryType::Income)
         .map(|e| e.amount)
         .sum();
 
     let total_expenses: i64 = entries
         .iter()
-        .filter(|e| e.entry_type == "expense")
+        .filter(|e| e.entry_type == EntryType::Expense)
         .map(|e| e.amount)
         .sum();
 
@@ -31,10 +31,10 @@ pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
                         tr {
                             td { (title_case(entry.label.as_str())) }
                             td {
-                                span .tag.is-primary[entry.entry_type == "income"]
-                                     .is-danger[entry.entry_type == "expense"]
+                                span .tag.is-primary[entry.entry_type == EntryType::Income]
+                                     .is-danger[entry.entry_type == EntryType::Expense]
                                 {
-                                    (title_case(entry.entry_type.as_str()))
+                                    (title_case(&entry.entry_type.to_string()))
                                 }
                             }
                             td { (format_pennies(entry.amount)) }

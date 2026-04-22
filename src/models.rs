@@ -2,21 +2,22 @@
 pub struct BudgetEntry {
     pub label: String,
     pub amount: i64,
-    pub entry_type: String,
+    pub entry_type: EntryType,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(sqlx::Type, Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[sqlx(rename_all = "lowercase")]
 #[serde(rename_all = "lowercase")]
 pub enum EntryType {
     Income,
     Expense,
 }
 
-impl EntryType {
-    pub fn as_str(&self) -> &str {
+impl std::fmt::Display for EntryType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            EntryType::Income => "income",
-            EntryType::Expense => "expense",
+            EntryType::Income => write!(f, "income"),
+            EntryType::Expense => write!(f, "expense"),
         }
     }
 }

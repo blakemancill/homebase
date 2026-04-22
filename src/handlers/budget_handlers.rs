@@ -58,7 +58,7 @@ pub async fn create_budget_entry(
         form.pay_period_id,
         &form.label,
         pennies,
-        form.entry_type.as_str(),
+        form.entry_type,
     )
     .await?;
 
