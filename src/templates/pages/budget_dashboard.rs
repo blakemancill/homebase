@@ -5,7 +5,19 @@ pub fn render_budget_dashboard() -> Markup {
         style {
             ".column.is-narrow:has(#budget-table:empty) {
                 display: none;
-            }"
+            }
+            input[type='date']::-webkit-calendar-picker-indicator {
+                filter: invert(1);
+                opacity: 0;
+                position: absolute;
+                right: 0;
+                width: 100%;
+                cursor: pointer;
+            }
+            input[type='date'] {
+                position: relative;
+            }
+            "
         }
         div .columns {
             div .column.is-one-third {
