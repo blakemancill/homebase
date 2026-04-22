@@ -1,5 +1,5 @@
-use crate::handlers::budget_handlers::BudgetEntry;
 use maud::{html, Markup};
+use crate::models::BudgetEntry;
 
 pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
     let total_income: i64 = entries.iter()

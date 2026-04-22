@@ -9,6 +9,7 @@ use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
+use crate::models::BudgetEntry;
 use crate::templates::partials::render_budget_table::render_budget_table;
 
 pub async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
@@ -149,13 +150,6 @@ pub enum BudgetError {
     InvalidAmount(#[from] rust_decimal::Error),
     #[error("amount out of range")]
     AmountOutOfRange(#[from] std::num::TryFromIntError),
-}
-
-#[derive(sqlx::FromRow)]
-pub struct BudgetEntry {
-    pub label: String,
-    pub amount: i64,
-    pub entry_type: String,
 }
 
 fn dollars_to_pennies(s: &str) -> Result<i64, BudgetError> {
