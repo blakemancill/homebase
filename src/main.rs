@@ -1,9 +1,9 @@
+pub mod db;
 pub mod errors;
 pub mod handlers;
+pub mod models;
 pub mod state;
 pub mod templates;
-pub mod models;
-pub mod db;
 
 use crate::handlers::budget_handlers::{budget_dashboard, create_budget_entry, create_pay_period};
 use crate::handlers::handlers::{handle_404, index};

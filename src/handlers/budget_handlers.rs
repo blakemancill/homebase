@@ -1,15 +1,15 @@
-use crate::db::get_entries_for_period;
+use crate::db::{get_entries_for_period, insert_budget_entry, upsert_pay_period};
 use crate::errors::AppError;
 use crate::state::ApplicationState;
 use crate::templates::layout::base_layout;
 use crate::templates::pages::budget_dashboard::render_budget_dashboard;
 use crate::templates::partials::render_budget_table::render_budget_table;
 use crate::templates::partials::render_entry_form;
+use axum::Form;
 use axum::extract::State;
 use axum::http::Uri;
-use axum::Form;
 use chrono::NaiveDate;
-use maud::{html, Markup};
+use maud::{Markup, html};
 use rust_decimal::Decimal;
 
 pub async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
@@ -33,41 +33,16 @@ pub async fn create_pay_period(
         });
     }
 
-    sqlx::query(
-        r#"
-                INSERT OR IGNORE INTO pay_period (start_date, end_date) VALUES (?, ?)
-            "#,
-    )
-    .bind(&form.start_date)
-    .bind(&form.end_date)
-    .execute(&state.pool)
-    .await
-    .map_err(|e| AppError::Internal(e.into()))?;
-
-    let id = sqlx::query_scalar::<_, i64>(
-        r#"
-                SELECT id
-                FROM pay_period
-                WHERE start_date = ? AND end_date = ?
-            "#,
-    )
-    .bind(form.start_date)
-    .bind(form.end_date)
-    .fetch_one(&state.pool)
-    .await
-    .map_err(|e| AppError::Internal(e.into()))?;
-
+    let id = upsert_pay_period(&state.pool, form.start_date, form.end_date).await?;
     let entries = get_entries_for_period(&state.pool, id).await?;
 
-    Ok(
-        html! {
-            // primary: goes into hx-target #entry-form
-            (render_entry_form(id, form.start_date, form.end_date))
+    Ok(html! {
+        // primary: goes into hx-target #entry-form
+        (render_entry_form(id, form.start_date, form.end_date))
 
-            // oob swap: htmx puts this into #budget-table
-            (render_budget_table(&entries, true))
-        }
-    )
+        // oob swap: htmx puts this into #budget-table
+        (render_budget_table(&entries, true))
+    })
 }
 
 pub async fn create_budget_entry(
@@ -75,22 +50,16 @@ pub async fn create_budget_entry(
     Form(form): Form<BudgetEntryForm>,
 ) -> Result<Markup, AppError> {
     // convert amount into pennies for accuracy
-    let pennies = dollars_to_pennies(&form.amount)
-        .map_err(|e| AppError::Internal(e.into()))?;
+    let pennies = dollars_to_pennies(&form.amount).map_err(|e| AppError::Internal(e.into()))?;
 
-    sqlx::query(
-        r#"
-                INSERT INTO budget_entries (pay_period_id, label, amount, entry_type)
-                VALUES (?, ?, ?, ?)
-            "#
+    insert_budget_entry(
+        &state.pool,
+        form.pay_period_id,
+        &form.label,
+        pennies,
+        form.entry_type.as_str(),
     )
-    .bind(&form.pay_period_id)
-    .bind(&form.label)
-    .bind(pennies)
-    .bind(&form.entry_type.as_str())
-    .execute(&state.pool)
-    .await
-    .map_err(|e| AppError::Internal(e.into()))?;
+    .await?;
 
     let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
 
@@ -115,14 +84,15 @@ pub struct BudgetEntryForm {
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum EntryType {
-    Income, Expense
+    Income,
+    Expense,
 }
 
 impl EntryType {
     fn as_str(&self) -> &str {
         match self {
             EntryType::Income => "income",
-            EntryType::Expense => "expense"
+            EntryType::Expense => "expense",
         }
     }
 }

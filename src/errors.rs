@@ -52,5 +52,9 @@ fn internal_error(e: impl std::fmt::Display) -> Response {
             p { "Internal Server Error" }
         }
     };
-    (StatusCode::INTERNAL_SERVER_ERROR, base_layout("Error", "/", content)).into_response()
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        base_layout("Error", "/", content),
+    )
+        .into_response()
 }

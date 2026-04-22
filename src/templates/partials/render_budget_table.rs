@@ -1,13 +1,15 @@
-use maud::{html, Markup};
 use crate::models::BudgetEntry;
+use maud::{Markup, html};
 
 pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
-    let total_income: i64 = entries.iter()
+    let total_income: i64 = entries
+        .iter()
         .filter(|e| e.entry_type == "income")
         .map(|e| e.amount)
         .sum();
 
-    let total_expenses: i64 = entries.iter()
+    let total_expenses: i64 = entries
+        .iter()
         .filter(|e| e.entry_type == "expense")
         .map(|e| e.amount)
         .sum();
