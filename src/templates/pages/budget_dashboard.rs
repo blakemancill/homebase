@@ -2,6 +2,11 @@ use maud::{Markup, html};
 
 pub fn render_budget_dashboard() -> Markup {
     html! {
+        style {
+            ".column.is-narrow:has(#budget-table:empty) {
+                display: none;
+            }"
+        }
         div .columns {
             div .column.is-one-third {
                 // pay period input form
@@ -29,7 +34,12 @@ pub fn render_budget_dashboard() -> Markup {
                             button
                                 .card-footer-item.button.is-danger.mr-1
                                 type="reset"
-                                _="on click set #entry-form.innerHTML to ''"
+                                _=
+                                    r#"
+                                        on click set #entry-form.innerHTML to ''
+                                        then set #budget-table.innerHTML to ''
+                                        then add .is-hidden to .column.is-narrow
+                                    "#
                             { "Reset" }
                             button .card-footer-item.button.is-primary type="submit" { "Submit" }
                         }
