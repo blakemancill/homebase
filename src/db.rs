@@ -8,7 +8,7 @@ pub async fn get_entries_for_period(
 ) -> sqlx::Result<Vec<BudgetEntry>> {
     sqlx::query_as!(
         BudgetEntry,
-        r#"SELECT label, amount, entry_type as "entry_type: EntryType"
+        r#"SELECT id, label, amount, entry_type as "entry_type: EntryType"
            FROM budget_entries WHERE pay_period_id = ?"#,
         pay_period_id
     )
@@ -55,5 +55,13 @@ pub async fn insert_budget_entry(
     )
     .execute(pool)
     .await?;
+    Ok(())
+}
+
+pub async fn remove_budget_entry(pool: &SqlitePool, id: i64) -> sqlx::Result<()> {
+    sqlx::query!("DELETE FROM budget_entries WHERE id = ?", id)
+    .execute(pool)
+    .await?;
+
     Ok(())
 }

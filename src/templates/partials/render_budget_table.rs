@@ -1,7 +1,7 @@
 use crate::models::{BudgetEntry, EntryType};
 use maud::{Markup, html};
 
-pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
+pub fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64, oob: bool) -> Markup {
     let total_income: i64 = entries
         .iter()
         .filter(|e| e.entry_type == EntryType::Income)
@@ -38,6 +38,14 @@ pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
                                 }
                             }
                             td { (format_pennies(entry.amount)) }
+                            td {
+                                button .delete
+                                    hx-delete="/budget-entry/delete"
+                                    hx-target="#budget-table"
+                                    hx-swap="outerHTML"
+                                    hx-vals=(format!(r#"{{"id": {}, "pay_period_id": {}}}"#, entry.id, pay_period_id))
+                                {}
+                            }
                         }
                     }
                 }

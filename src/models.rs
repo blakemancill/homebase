@@ -1,5 +1,6 @@
 #[derive(sqlx::FromRow)]
 pub struct BudgetEntry {
+    pub id: i64,
     pub label: String,
     pub amount: i64,
     pub entry_type: EntryType,

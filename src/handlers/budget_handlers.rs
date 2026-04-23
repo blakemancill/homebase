@@ -1,4 +1,4 @@
-use crate::db::{get_entries_for_period, insert_budget_entry, upsert_pay_period};
+use crate::db::{get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period};
 use crate::errors::AppError;
 use crate::models::EntryType;
 use crate::state::ApplicationState;
@@ -7,7 +7,7 @@ use crate::templates::pages::budget_dashboard::render_budget_dashboard;
 use crate::templates::partials::render_budget_table::render_budget_table;
 use crate::templates::partials::render_entry_form;
 use axum::Form;
-use axum::extract::State;
+use axum::extract::{Query, State};
 use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
@@ -42,7 +42,7 @@ pub async fn create_pay_period(
         (render_entry_form(id, form.start_date, form.end_date))
 
         // oob swap: htmx puts this into #budget-table
-        (render_budget_table(&entries, true))
+        (render_budget_table(&entries, id ,true))
     })
 }
 
@@ -64,7 +64,13 @@ pub async fn create_budget_entry(
 
     let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
 
-    Ok(render_budget_table(&entries, false))
+    Ok(render_budget_table(&entries, form.pay_period_id, false))
+}
+
+pub async fn delete_budget_entry(State(state): State<ApplicationState>, Query(form): Query<DeleteBudgetEntryForm>) -> Result<Markup, AppError> {
+    remove_budget_entry(&state.pool, form.id).await?;
+    let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
+    Ok(render_budget_table(&entries, form.pay_period_id, false))
 }
 
 // Form shapes
@@ -80,6 +86,12 @@ pub struct BudgetEntryForm {
     pay_period_id: i64,
     label: String,
     amount: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct DeleteBudgetEntryForm {
+    id: i64,
+    pay_period_id: i64,
 }
 
 // Helpers
