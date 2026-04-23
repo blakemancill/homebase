@@ -6,3 +6,4 @@ homebase.db-wal
 /.idea/db-forest-config.xml
 /.idea/sqldialects.xml
 .env
+/deploy.sh

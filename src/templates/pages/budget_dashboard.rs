@@ -63,7 +63,9 @@ pub fn render_budget_dashboard() -> Markup {
             }
             div .column.is-narrow {
                 // Table
-                div #budget-table {}
+                div .table-container {
+                    div #budget-table {}
+                }
             }
         }
     }

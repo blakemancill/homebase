@@ -7,6 +7,7 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
         html {
             head {
                 meta charset="utf-8";
+                meta name="viewport" content="width=device-width, initial-scale=1";
 
                 style {
                     "
@@ -37,12 +38,17 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
                 title { (page_title) }
             }
             body .is-flex.is-flex-direction-column hx-boost="true" {
+                // hamburger + top bar only visible on mobile
+                div .is-hidden-tablet {
+                    (render_navbar(current_path))
+                }
                 div .columns.is-gapless {
-                    div .column .is-2 {
+                    // sidebar only visible on tablet+
+                    div .column.is-2.is-hidden-mobile {
                         (render_navbar(current_path))
                     }
-                    div .column.is-flex.is-flex-direction-column {
-                        main #main-content .p-5.is-flex-grow-1 style="min-height: 100vh;" {
+                    div .column {
+                        main #main-content .p-5 style="min-height: 100vh;" {
                             (content)
                         }
                     }
