@@ -22,6 +22,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let state = ApplicationState::new().await?;
+    tracing::info!("database connected and migrations run");
 
     let app = Router::new()
         .route("/", get(index))
@@ -36,6 +37,7 @@ async fn main() -> anyhow::Result<()> {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000")
         .await
         .context("failed to bind TCP listener")?;
+    tracing::info!("listening on http://0.0.0.0:3000");
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
