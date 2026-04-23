@@ -60,8 +60,8 @@ pub async fn insert_budget_entry(
 
 pub async fn remove_budget_entry(pool: &SqlitePool, id: i64) -> sqlx::Result<()> {
     sqlx::query!("DELETE FROM budget_entries WHERE id = ?", id)
-    .execute(pool)
-    .await?;
+        .execute(pool)
+        .await?;
 
     Ok(())
 }

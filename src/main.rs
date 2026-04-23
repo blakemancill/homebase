@@ -5,7 +5,9 @@ pub mod models;
 pub mod state;
 pub mod templates;
 
-use crate::handlers::budget_handlers::{budget_dashboard, create_budget_entry, create_pay_period, delete_budget_entry};
+use crate::handlers::budget_handlers::{
+    budget_dashboard, create_budget_entry, create_pay_period, delete_budget_entry,
+};
 use crate::handlers::handlers::{handle_404, index};
 use crate::state::ApplicationState;
 use anyhow::Context;

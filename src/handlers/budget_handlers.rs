@@ -1,4 +1,6 @@
-use crate::db::{get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period};
+use crate::db::{
+    get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period,
+};
 use crate::errors::AppError;
 use crate::models::EntryType;
 use crate::state::ApplicationState;
@@ -69,7 +71,10 @@ pub async fn create_budget_entry(
     Ok(render_budget_table(&entries, form.pay_period_id))
 }
 
-pub async fn delete_budget_entry(State(state): State<ApplicationState>, Query(form): Query<DeleteBudgetEntryForm>) -> Result<Markup, AppError> {
+pub async fn delete_budget_entry(
+    State(state): State<ApplicationState>,
+    Query(form): Query<DeleteBudgetEntryForm>,
+) -> Result<Markup, AppError> {
     remove_budget_entry(&state.pool, form.id).await?;
     let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
     Ok(render_budget_table(&entries, form.pay_period_id))
