@@ -1,8 +1,8 @@
 /target
 /.idea/dataSources.xml
-finance_tracker.db
-finance_tracker.db-shm
-finance_tracker.db-wal
+homebase.db
+homebase.db-shm
+homebase.db-wal
 /.idea/db-forest-config.xml
 /.idea/sqldialects.xml
 .env
