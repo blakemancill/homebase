@@ -42,7 +42,9 @@ pub async fn create_pay_period(
         (render_entry_form(id, form.start_date, form.end_date))
 
         // oob swap: htmx puts this into #budget-table
-        (render_budget_table(&entries, id ,true))
+        div #budget-table hx-swap-oob="outerHTML" {
+            (render_budget_table(&entries, id))
+        }
     })
 }
 
@@ -64,13 +66,13 @@ pub async fn create_budget_entry(
 
     let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
 
-    Ok(render_budget_table(&entries, form.pay_period_id, false))
+    Ok(render_budget_table(&entries, form.pay_period_id))
 }
 
 pub async fn delete_budget_entry(State(state): State<ApplicationState>, Query(form): Query<DeleteBudgetEntryForm>) -> Result<Markup, AppError> {
     remove_budget_entry(&state.pool, form.id).await?;
     let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
-    Ok(render_budget_table(&entries, form.pay_period_id, false))
+    Ok(render_budget_table(&entries, form.pay_period_id))
 }
 
 // Form shapes

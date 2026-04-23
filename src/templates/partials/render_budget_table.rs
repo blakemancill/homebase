@@ -1,7 +1,7 @@
 use crate::models::{BudgetEntry, EntryType};
 use maud::{Markup, html};
 
-pub fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64, oob: bool) -> Markup {
+pub fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64) -> Markup {
     let total_income: i64 = entries
         .iter()
         .filter(|e| e.entry_type == EntryType::Income)
@@ -17,7 +17,7 @@ pub fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64, oob: boo
     let remaining = total_income - total_expenses;
 
     html! {
-        div #budget-table .card.p-3 hx-swap-oob=[oob.then_some("outerHTML")] {
+        div #budget-table .card.p-3 {
             table .table.is-fullwidth {
                 thead {
                     tr {
