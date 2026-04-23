@@ -19,6 +19,7 @@ pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) ->
                             ))
                         }
                     }
+                    br;
                     // toggle buttons between income and expense
                     div .buttons.has-addons.is-centered {
                         button
