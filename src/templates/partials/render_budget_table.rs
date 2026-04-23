@@ -53,7 +53,9 @@ pub fn render_budget_table(entries: &[BudgetEntry], oob: bool) -> Markup {
 }
 
 fn format_pennies(pennies: i64) -> String {
-    format!("${:.2}", pennies as f64 / 100.0)
+    let sign = if pennies < 0 { "-" } else { "" };
+    let abs = pennies.unsigned_abs();
+    format!("{sign}${}.{:02}", abs / 100, abs % 100)
 }
 
 fn title_case(s: &str) -> String {
