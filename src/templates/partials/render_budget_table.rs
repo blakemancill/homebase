@@ -64,9 +64,44 @@ fn title_case(s: &str) -> String {
             let mut c = word.chars();
             match c.next() {
                 None => String::new(),
-                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+                Some(f) => f.to_uppercase().collect::<String>() + &c.as_str().to_lowercase(),
             }
         })
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn format_pennies_positive() {
+        assert_eq!(format_pennies(1050), "$10.50");
+    }
+
+    #[test]
+    fn format_pennies_negative() {
+        assert_eq!(format_pennies(-1050), "-$10.50");
+    }
+
+    #[test]
+    fn format_pennies_negative_less_than_dollar() {
+        assert_eq!(format_pennies(-5), "-$0.05");
+    }
+
+    #[test]
+    fn title_case_basic() {
+        assert_eq!(title_case("hello world"), "Hello World");
+    }
+
+    #[test]
+    fn title_case_already_upper() {
+        assert_eq!(title_case("HELLO"), "Hello");
+    }
+
+    #[test]
+    fn title_case_lowercases_rest() {
+        assert_eq!(title_case("hELLO wORLD"), "Hello World");
+    }
 }
