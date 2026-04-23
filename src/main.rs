@@ -38,8 +38,16 @@ async fn main() -> anyhow::Result<()> {
         .context("failed to bind TCP listener")?;
 
     axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .context("axum::serve failed")?;
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    tokio::signal::ctrl_c()
+        .await
+        .expect("failed to listen for ctrl+c");
+    tracing::info!("shutting down...");
 }
