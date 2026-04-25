@@ -16,6 +16,11 @@ pub async fn get_entries_for_period(
     .await
 }
 
+/// Returns the id of the pay period for (start, end), inserting one if absent
+///
+/// The 'DO UPDATE SET' is deliberate no-op
+/// 'ON CONFLICT DO NOTHING' would skip the row and the return would be nothing.
+/// so by forcibly writing, we guarantee an id comes back
 pub async fn upsert_pay_period(
     pool: &SqlitePool,
     start: NaiveDate,
