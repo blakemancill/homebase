@@ -21,22 +21,16 @@ pub async fn upsert_pay_period(
     start: NaiveDate,
     end: NaiveDate,
 ) -> sqlx::Result<i64> {
-    sqlx::query!(
-        "INSERT OR IGNORE INTO pay_period (start_date, end_date) VALUES (?, ?)",
-        start,
-        end
-    )
-    .execute(pool)
-    .await?;
-
     sqlx::query_scalar!(
-        "SELECT id FROM pay_period WHERE start_date = ? AND end_date = ?",
-        start,
-        end
+        r#"
+            INSERT INTO pay_period (start_date, end_date) VALUES (?, ?)
+            ON CONFLICT (start_date, end_date) DO UPDATE SET start_date = pay_period.start_date
+            returning id
+        "#,
+        start, end
     )
     .fetch_one(pool)
     .await
-    .map(|id: Option<i64>| id.expect("id is always set"))
 }
 
 pub async fn insert_budget_entry(
