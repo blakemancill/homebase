@@ -1,19 +1,17 @@
-use crate::db::{
+use crate::features::budget::queries::{
     get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period,
 };
 use crate::errors::AppError;
-use crate::models::EntryType;
+use crate::features::budget::models::EntryType;
 use crate::state::ApplicationState;
-use crate::templates::layout::base_layout;
-use crate::templates::pages::budget_dashboard::render_budget_dashboard;
-use crate::templates::partials::render_budget_table::render_budget_table;
-use crate::templates::partials::render_entry_form;
+use crate::features::budget::templates::{render_budget_dashboard, render_budget_table, render_entry_form};
 use axum::Form;
 use axum::extract::{Query, State};
 use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
+use crate::shared::base::base_layout;
 
 pub async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(

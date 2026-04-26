@@ -1,4 +1,4 @@
-use crate::models::{BudgetEntry, EntryType};
+use crate::features::budget::models::{BudgetEntry, EntryType};
 use chrono::NaiveDate;
 use sqlx::SqlitePool;
 

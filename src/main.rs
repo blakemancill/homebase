@@ -1,18 +1,11 @@
-pub mod db;
 pub mod errors;
-pub mod handlers;
-pub mod models;
 pub mod state;
-pub mod templates;
+pub mod shared;
+pub mod features;
 
-use crate::handlers::budget_handlers::{
-    budget_dashboard, create_budget_entry, create_pay_period, delete_budget_entry,
-};
-use crate::handlers::handlers::{handle_404, index};
 use crate::state::ApplicationState;
 use anyhow::Context;
 use axum::Router;
-use axum::routing::{delete, get, post};
 use tower::ServiceBuilder;
 use tower_http::trace::TraceLayer;
 
@@ -25,12 +18,9 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("database connected and migrations run");
 
     let app = Router::new()
-        .route("/", get(index))
-        .route("/dashboard", get(budget_dashboard))
-        .route("/pay-period", post(create_pay_period))
-        .route("/budget-entry", post(create_budget_entry))
-        .route("/budget-entry/delete", delete(delete_budget_entry))
-        .fallback(handle_404)
+        .merge(features::home::routes())
+        .merge(features::budget::routes())
+        .fallback(errors::handle_404)
         .with_state(state)
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
 
