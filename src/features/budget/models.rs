@@ -1,5 +1,5 @@
 #[derive(sqlx::FromRow)]
-pub struct BudgetEntry {
+pub(crate) struct BudgetEntry {
     pub id: i64,
     pub label: String,
     pub amount: i64,
@@ -9,7 +9,7 @@ pub struct BudgetEntry {
 #[derive(sqlx::Type, Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 #[sqlx(rename_all = "lowercase")]
 #[serde(rename_all = "lowercase")]
-pub enum EntryType {
+pub(crate) enum EntryType {
     Income,
     Expense,
 }

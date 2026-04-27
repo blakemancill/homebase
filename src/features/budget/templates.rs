@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use maud::{Markup, html};
 use crate::features::budget::models::{BudgetEntry, EntryType};
 
-pub fn render_budget_dashboard() -> Markup {
+pub(crate) fn render_budget_dashboard() -> Markup {
     html! {
         style {
             ".column.is-narrow:has(#budget-table:empty) {
@@ -73,7 +73,7 @@ pub fn render_budget_dashboard() -> Markup {
     }
 }
 
-pub fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64) -> Markup {
+pub(crate) fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64) -> Markup {
     let total_income: i64 = entries
         .iter()
         .filter(|e| e.entry_type == EntryType::Income)
@@ -132,7 +132,7 @@ pub fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64) -> Marku
     }
 }
 
-pub fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) -> Markup {
+pub(crate) fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) -> Markup {
     html! {
         form
             hx-post="/budget-entry"
