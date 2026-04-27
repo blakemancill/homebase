@@ -1,6 +1,6 @@
+use crate::features::budget::models::{BudgetEntry, EntryType};
 use chrono::NaiveDate;
 use maud::{Markup, html};
-use crate::features::budget::models::{BudgetEntry, EntryType};
 
 pub(crate) fn render_budget_dashboard() -> Markup {
     html! {

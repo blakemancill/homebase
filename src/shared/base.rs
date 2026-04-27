@@ -1,5 +1,5 @@
-use maud::{DOCTYPE, Markup, html};
 use crate::shared::navbar::render_navbar;
+use maud::{DOCTYPE, Markup, html};
 
 pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Markup {
     html! {

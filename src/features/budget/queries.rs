@@ -65,10 +65,18 @@ pub(crate) async fn insert_budget_entry(
     Ok(())
 }
 
-pub(crate) async fn remove_budget_entry(pool: &SqlitePool, id: i64) -> sqlx::Result<()> {
-    sqlx::query!("DELETE FROM budget_entries WHERE id = ?", id)
-        .execute(pool)
-        .await?;
+pub(crate) async fn remove_budget_entry(
+    pool: &SqlitePool,
+    user_id: i64,
+    id: i64,
+) -> sqlx::Result<()> {
+    sqlx::query!(
+        "DELETE FROM budget_entries WHERE id = ? AND user_id = ?",
+        id,
+        user_id
+    )
+    .execute(pool)
+    .await?;
 
     Ok(())
 }

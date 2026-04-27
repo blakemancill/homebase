@@ -1,7 +1,7 @@
 pub mod errors;
-pub mod state;
-pub mod shared;
 pub mod features;
+pub mod shared;
+pub mod state;
 
 use crate::state::ApplicationState;
 use anyhow::Context;

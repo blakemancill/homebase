@@ -1,7 +1,7 @@
 mod handlers;
-mod queries;
 mod models;
-mod templates;
+mod queries;
 mod routes;
+mod templates;
 
 pub use routes::routes;

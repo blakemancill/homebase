@@ -1,7 +1,7 @@
-use std::str::FromStr;
 use anyhow::Context;
-use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
 use sqlx::SqlitePool;
+use sqlx::sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions};
+use std::str::FromStr;
 
 #[derive(Clone)]
 pub struct ApplicationState {

@@ -1,17 +1,19 @@
+use crate::errors::AppError;
+use crate::features::budget::models::EntryType;
 use crate::features::budget::queries::{
     get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period,
 };
-use crate::errors::AppError;
-use crate::features::budget::models::EntryType;
+use crate::features::budget::templates::{
+    render_budget_dashboard, render_budget_table, render_entry_form,
+};
+use crate::shared::base::base_layout;
 use crate::state::ApplicationState;
-use crate::features::budget::templates::{render_budget_dashboard, render_budget_table, render_entry_form};
 use axum::Form;
 use axum::extract::{Query, State};
 use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
-use crate::shared::base::base_layout;
 
 pub(crate) async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
@@ -26,7 +28,7 @@ pub(crate) async fn create_pay_period(
     Form(form): Form<PayPeriodForm>,
 ) -> Result<Markup, AppError> {
     let user_id = 1;
-    
+
     // pay periods should make sense. You don't get paid backwards in time!
     if form.start_date >= form.end_date {
         return Ok(html! {
@@ -55,7 +57,7 @@ pub(crate) async fn create_budget_entry(
     Form(form): Form<BudgetEntryForm>,
 ) -> Result<Markup, AppError> {
     let user_id = 1;
-    
+
     // convert amount into pennies for accuracy
     let pennies = dollars_to_pennies(&form.amount).map_err(|e| AppError::Internal(e.into()))?;
 
@@ -79,7 +81,7 @@ pub(crate) async fn delete_budget_entry(
     Query(form): Query<DeleteBudgetEntryForm>,
 ) -> Result<Markup, AppError> {
     let user_id = 1;
-    remove_budget_entry(&state.pool, form.id).await?;
+    remove_budget_entry(&state.pool, user_id, form.id).await?;
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
     Ok(render_budget_table(&entries, form.pay_period_id))
 }

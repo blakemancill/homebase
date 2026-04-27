@@ -1,5 +1,5 @@
 mod handlers;
-mod templates;
 mod routes;
+mod templates;
 
 pub use routes::routes;

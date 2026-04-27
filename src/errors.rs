@@ -1,8 +1,8 @@
+use crate::shared::base::base_layout;
 use axum::http::{StatusCode, Uri};
 use axum::response::{IntoResponse, Response};
-use maud::{html, Markup};
+use maud::{Markup, html};
 use thiserror::Error;
-use crate::shared::base::base_layout;
 
 pub async fn handle_404(uri: Uri) -> Result<Markup, AppError> {
     Err(AppError::NotFound(uri))
