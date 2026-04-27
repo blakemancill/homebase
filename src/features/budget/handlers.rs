@@ -25,6 +25,8 @@ pub(crate) async fn create_pay_period(
     State(state): State<ApplicationState>,
     Form(form): Form<PayPeriodForm>,
 ) -> Result<Markup, AppError> {
+    let user_id = 1;
+    
     // pay periods should make sense. You don't get paid backwards in time!
     if form.start_date >= form.end_date {
         return Ok(html! {
@@ -34,8 +36,8 @@ pub(crate) async fn create_pay_period(
         });
     }
 
-    let id = upsert_pay_period(&state.pool, form.start_date, form.end_date).await?;
-    let entries = get_entries_for_period(&state.pool, id).await?;
+    let id = upsert_pay_period(&state.pool, user_id, form.start_date, form.end_date).await?;
+    let entries = get_entries_for_period(&state.pool, user_id, id).await?;
 
     Ok(html! {
         // primary: goes into hx-target #entry-form
@@ -52,11 +54,14 @@ pub(crate) async fn create_budget_entry(
     State(state): State<ApplicationState>,
     Form(form): Form<BudgetEntryForm>,
 ) -> Result<Markup, AppError> {
+    let user_id = 1;
+    
     // convert amount into pennies for accuracy
     let pennies = dollars_to_pennies(&form.amount).map_err(|e| AppError::Internal(e.into()))?;
 
     insert_budget_entry(
         &state.pool,
+        user_id,
         form.pay_period_id,
         &form.label,
         pennies,
@@ -64,7 +69,7 @@ pub(crate) async fn create_budget_entry(
     )
     .await?;
 
-    let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
+    let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
 
     Ok(render_budget_table(&entries, form.pay_period_id))
 }
@@ -73,8 +78,9 @@ pub(crate) async fn delete_budget_entry(
     State(state): State<ApplicationState>,
     Query(form): Query<DeleteBudgetEntryForm>,
 ) -> Result<Markup, AppError> {
+    let user_id = 1;
     remove_budget_entry(&state.pool, form.id).await?;
-    let entries = get_entries_for_period(&state.pool, form.pay_period_id).await?;
+    let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
     Ok(render_budget_table(&entries, form.pay_period_id))
 }
 
