@@ -15,6 +15,9 @@ use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
 
+// TODO: Remove when proper auth is added
+fn current_user_id() -> i64 {1}
+
 pub(crate) async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
         "Dashboard",
@@ -27,7 +30,7 @@ pub(crate) async fn create_pay_period(
     State(state): State<ApplicationState>,
     Form(form): Form<PayPeriodForm>,
 ) -> Result<Markup, AppError> {
-    let user_id = 1;
+    let user_id = current_user_id();
 
     // pay periods should make sense. You don't get paid backwards in time!
     if form.start_date >= form.end_date {
@@ -56,12 +59,12 @@ pub(crate) async fn create_budget_entry(
     State(state): State<ApplicationState>,
     Form(form): Form<BudgetEntryForm>,
 ) -> Result<Markup, AppError> {
-    let user_id = 1;
+    let user_id = current_user_id();
 
     // convert amount into pennies for accuracy
     let pennies = dollars_to_pennies(&form.amount).map_err(|e| AppError::Internal(e.into()))?;
 
-    insert_budget_entry(
+    let inserted = insert_budget_entry(
         &state.pool,
         user_id,
         form.pay_period_id,
@@ -70,6 +73,8 @@ pub(crate) async fn create_budget_entry(
         form.entry_type,
     )
     .await?;
+
+    if !inserted { return Err(AppError::Forbidden) }
 
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
 
@@ -80,7 +85,7 @@ pub(crate) async fn delete_budget_entry(
     State(state): State<ApplicationState>,
     Query(form): Query<DeleteBudgetEntryForm>,
 ) -> Result<Markup, AppError> {
-    let user_id = 1;
+    let user_id = current_user_id();
     remove_budget_entry(&state.pool, user_id, form.id).await?;
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
     Ok(render_budget_table(&entries, form.pay_period_id))

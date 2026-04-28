@@ -51,18 +51,28 @@ pub(crate) async fn insert_budget_entry(
     label: &str,
     amount: i64,
     entry_type: EntryType,
-) -> sqlx::Result<()> {
-    sqlx::query!(
-        "INSERT INTO budget_entries (user_id, pay_period_id, label, amount, entry_type) VALUES (?, ?, ?, ?, ?)",
+) -> sqlx::Result<bool>  {
+    let was_inserted = sqlx::query!(
+        r#"
+            INSERT INTO budget_entries (user_id, pay_period_id, label, amount, entry_type)
+            SELECT ?, ?, ?, ?, ?
+            WHERE EXISTS (
+                SELECT 1 FROM pay_period
+                WHERE id = ? AND user_id = ?
+            )
+        "#,
         user_id,
         pay_period_id,
         label,
         amount,
-        entry_type
+        entry_type,
+        pay_period_id,
+        user_id
     )
     .execute(pool)
     .await?;
-    Ok(())
+
+    Ok(was_inserted.rows_affected() > 0)
 }
 
 pub(crate) async fn remove_budget_entry(

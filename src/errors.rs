@@ -13,6 +13,9 @@ pub enum AppError {
     #[error("Resource Not Found")]
     NotFound(Uri),
 
+    #[error("Forbidden")]
+    Forbidden,
+
     #[error("Internal Server Error")]
     Internal(#[from] anyhow::Error),
 
@@ -43,6 +46,22 @@ impl IntoResponse for AppError {
             // Renders an error message on internal server error
             AppError::Internal(e) => internal_error(e.to_string()),
             AppError::Database(e) => internal_error(e.to_string()),
+
+            // Generates a 403 Forbidden page
+            AppError::Forbidden => {
+                tracing::warn!("403 Forbidden");
+                let content = html! {
+                    div .notification.is-danger {
+                        h1 { "403 - Forbidden" }
+                        br;
+                        p { "You don't have permission to perform that action." }
+                    }
+                };
+                (
+                    StatusCode::FORBIDDEN,
+                    base_layout("Forbidden", "/", content),
+                ).into_response()
+            }
         }
     }
 }
