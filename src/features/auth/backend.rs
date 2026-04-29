@@ -39,7 +39,7 @@ impl AuthnBackend for Backend {
         .await?;
 
         // verify password via a task
-        task::spawn_blocking(|| {
+        task::spawn_blocking(move || {
             Ok(user.filter(|user| verify_password(creds.password, &user.password_hash).is_ok()))
         }).await?
     }

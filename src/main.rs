@@ -20,6 +20,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .merge(features::home::routes())
         .merge(features::budget::routes())
+        .merge(features::auth::routes())
         .fallback(errors::handle_404)
         .with_state(state)
         .layer(ServiceBuilder::new().layer(TraceLayer::new_for_http()));
