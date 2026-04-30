@@ -21,6 +21,8 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let state = ApplicationState::new().await?;
+    bootstrap_user(&state.pool).await?;
+    return Ok(());
     tracing::info!("database connected and migrations run");
 
     let session_store = SqliteStore::new(state.pool.clone());
@@ -66,7 +68,6 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[warn(dead_code)]
 async fn bootstrap_user(pool: &SqlitePool) -> anyhow::Result<()> {
     let username = std::env::var("BOOTSTRAP_USERNAME")
         .context("BOOTSTRAP_USERNAME must be set")?;
