@@ -8,7 +8,6 @@ use anyhow::Context;
 use axum::Router;
 use axum_login::{login_required, AuthManagerLayerBuilder};
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer, ExpiredDeletion};
-use sqlx::SqlitePool;
 use time::Duration;
 use tokio::signal;
 use tokio::task::AbortHandle;
@@ -21,8 +20,6 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let state = ApplicationState::new().await?;
-    bootstrap_user(&state.pool).await?;
-    return Ok(());
     tracing::info!("database connected and migrations run");
 
     let session_store = SqliteStore::new(state.pool.clone());
@@ -65,26 +62,6 @@ async fn main() -> anyhow::Result<()> {
         .context("axum::serve failed")?;
 
     deletion_task.await??;
-    Ok(())
-}
-
-async fn bootstrap_user(pool: &SqlitePool) -> anyhow::Result<()> {
-    let username = std::env::var("BOOTSTRAP_USERNAME")
-        .context("BOOTSTRAP_USERNAME must be set")?;
-    let password = std::env::var("BOOTSTRAP_PASSWORD")
-        .context("BOOTSTRAP_PASSWORD must be set")?;
-
-    let hash = password_auth::generate_hash(&password);
-
-    sqlx::query!(
-        "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-        username,
-        hash,
-    )
-        .execute(pool)
-        .await?;
-
-    tracing::info!("bootstrapped user {username}");
     Ok(())
 }
 
