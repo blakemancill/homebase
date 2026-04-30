@@ -32,7 +32,7 @@ async fn main() -> anyhow::Result<()> {
     );
 
     let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(false)
+        .with_secure(true)
         .with_expiry(Expiry::OnInactivity(Duration::days(30)));
 
     let backend = features::auth::Backend::new(state.pool.clone());
