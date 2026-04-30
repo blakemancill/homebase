@@ -65,7 +65,11 @@ async fn main() -> anyhow::Result<()> {
         .await
         .context("axum::serve failed")?;
 
-    deletion_task.await??;
+    match deletion_task.await {
+        Ok(result) => result?,
+        Err(e) if e.is_cancelled() => {}
+        Err(e) => return Err(e.into()),
+    }
     Ok(())
 }
 
