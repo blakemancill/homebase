@@ -1,7 +1,7 @@
-use std::fmt::Formatter;
 use axum_login::AuthUser;
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use std::fmt::Formatter;
 
 #[derive(Clone, Serialize, Deserialize, FromRow)]
 pub struct User {

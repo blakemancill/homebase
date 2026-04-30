@@ -1,8 +1,8 @@
 mod backend;
-pub mod models;
 pub mod handlers;
+pub mod models;
 pub mod routes;
 pub mod templates;
 
-pub use backend::{Backend, AuthSession};
+pub use backend::{AuthSession, Backend};
 pub use routes::routes;

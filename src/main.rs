@@ -6,8 +6,8 @@ pub mod state;
 use crate::state::ApplicationState;
 use anyhow::Context;
 use axum::Router;
-use axum_login::{login_required, AuthManagerLayerBuilder};
-use axum_login::tower_sessions::{Expiry, SessionManagerLayer, ExpiredDeletion};
+use axum_login::tower_sessions::{ExpiredDeletion, Expiry, SessionManagerLayer};
+use axum_login::{AuthManagerLayerBuilder, login_required};
 use time::Duration;
 use tokio::signal;
 use tokio::task::AbortHandle;
@@ -41,7 +41,10 @@ async fn main() -> anyhow::Result<()> {
     let protected = Router::new()
         .merge(features::home::routes())
         .merge(features::budget::routes())
-        .route_layer(login_required!(features::auth::Backend, login_url = "/login"));
+        .route_layer(login_required!(
+            features::auth::Backend,
+            login_url = "/login"
+        ));
 
     let app = Router::new()
         .merge(protected)
@@ -52,7 +55,8 @@ async fn main() -> anyhow::Result<()> {
         .layer(session_layer)
         .layer(TraceLayer::new_for_http());
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+        .await
         .context("failed to bind TCP listener")?;
     tracing::info!("listening on http://127.0.0.1:3000");
 
@@ -75,7 +79,9 @@ async fn shutdown_signal(deletion_task_abort_handle: AbortHandle) {
     #[cfg(unix)]
     let terminate = async {
         match signal::unix::signal(signal::unix::SignalKind::terminate()) {
-            Ok(mut s) => { s.recv().await; }
+            Ok(mut s) => {
+                s.recv().await;
+            }
             Err(e) => tracing::error!(?e, "failed to install SIGTERM handler"),
         }
     };

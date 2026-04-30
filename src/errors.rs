@@ -60,7 +60,8 @@ impl IntoResponse for AppError {
                 (
                     StatusCode::FORBIDDEN,
                     base_layout("Forbidden", "/", content),
-                ).into_response()
+                )
+                    .into_response()
             }
         }
     }

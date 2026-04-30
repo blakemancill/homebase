@@ -1,12 +1,12 @@
-use axum::Form;
-use axum::http::Uri;
-use axum::response::{IntoResponse, Redirect, Response};
-use maud::Markup;
 use crate::errors::AppError;
 use crate::features::auth::AuthSession;
 use crate::features::auth::models::Credentials;
 use crate::features::auth::templates::render_login_page;
 use crate::shared::base::base_layout;
+use axum::Form;
+use axum::http::Uri;
+use axum::response::{IntoResponse, Redirect, Response};
+use maud::Markup;
 
 pub(crate) async fn login_page(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout("Login", uri.path(), render_login_page()))

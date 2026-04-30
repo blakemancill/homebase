@@ -1,4 +1,5 @@
 use crate::errors::AppError;
+use crate::features::auth::AuthSession;
 use crate::features::budget::models::EntryType;
 use crate::features::budget::queries::{
     get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period,
@@ -14,7 +15,6 @@ use axum::http::Uri;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
-use crate::features::auth::AuthSession;
 
 pub(crate) async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
@@ -74,7 +74,9 @@ pub(crate) async fn create_budget_entry(
     )
     .await?;
 
-    if !inserted { return Err(AppError::Forbidden) }
+    if !inserted {
+        return Err(AppError::Forbidden);
+    }
 
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
 

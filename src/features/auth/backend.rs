@@ -1,8 +1,8 @@
+use crate::features::auth::models::{Credentials, User};
 use axum_login::{AuthnBackend, UserId};
 use password_auth::verify_password;
 use sqlx::SqlitePool;
 use tokio::task;
-use crate::features::auth::models::{Credentials, User};
 
 #[derive(Clone, Debug)]
 pub struct Backend {
@@ -41,7 +41,8 @@ impl AuthnBackend for Backend {
         // verify password via a task
         task::spawn_blocking(move || {
             Ok(user.filter(|user| verify_password(creds.password, &user.password_hash).is_ok()))
-        }).await?
+        })
+        .await?
     }
 
     async fn get_user(&self, user_id: &UserId<Self>) -> Result<Option<Self::User>, Self::Error> {

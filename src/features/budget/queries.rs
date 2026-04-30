@@ -51,7 +51,7 @@ pub(crate) async fn insert_budget_entry(
     label: &str,
     amount: i64,
     entry_type: EntryType,
-) -> sqlx::Result<bool>  {
+) -> sqlx::Result<bool> {
     let was_inserted = sqlx::query!(
         r#"
             INSERT INTO budget_entries (user_id, pay_period_id, label, amount, entry_type)
