@@ -11,7 +11,8 @@ use crate::shared::base::base_layout;
 use crate::state::ApplicationState;
 use axum::Form;
 use axum::extract::{Query, State};
-use axum::http::Uri;
+use axum::http::{HeaderMap, Uri};
+use axum::response::IntoResponse;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
@@ -45,7 +46,7 @@ pub(crate) async fn create_pay_period(
 
     Ok(html! {
         // primary: goes into hx-target #entry-form
-        (render_entry_form(id, form.start_date, form.end_date))
+        (render_entry_form(id, form.start_date, form.end_date, None))
 
         // oob swap: htmx puts this into #budget-table
         div #budget-table hx-swap-oob="outerHTML" {
@@ -58,11 +59,32 @@ pub(crate) async fn create_budget_entry(
     auth_session: AuthSession,
     State(state): State<ApplicationState>,
     Form(form): Form<BudgetEntryForm>,
-) -> Result<Markup, AppError> {
+) -> Result<axum::response::Response, AppError> {
     let user_id = auth_session.user.ok_or(AppError::Forbidden)?.id;
 
     // convert amount into pennies for accuracy
-    let pennies = dollars_to_pennies(&form.amount).map_err(|e| AppError::Internal(e.into()))?;
+    let pennies = match dollars_to_pennies(&form.amount) {
+        Ok(p) => p,
+        Err(_) => {
+            let prefill = FormPrefill {
+                values: &form,
+                error: "Invalid Amount",
+            };
+            let mut headers = HeaderMap::new();
+            headers.insert("HX-Retarget", "#entry-form".parse().unwrap());
+            headers.insert("HX-Reswap", "outerHTML".parse().unwrap());
+            return Ok((
+                headers,
+                render_entry_form(
+                    form.pay_period_id,
+                    form.start_date,
+                    form.end_date,
+                    Some(&prefill),
+                ),
+            )
+                .into_response());
+        }
+    };
 
     let inserted = insert_budget_entry(
         &state.pool,
@@ -80,7 +102,7 @@ pub(crate) async fn create_budget_entry(
 
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
 
-    Ok(render_budget_table(&entries, form.pay_period_id))
+    Ok(render_budget_table(&entries, form.pay_period_id).into_response())
 }
 
 pub(crate) async fn delete_budget_entry(
@@ -103,10 +125,17 @@ pub(crate) struct PayPeriodForm {
 
 #[derive(serde::Deserialize)]
 pub(crate) struct BudgetEntryForm {
-    entry_type: EntryType,
+    pub entry_type: EntryType,
     pay_period_id: i64,
-    label: String,
+    pub label: String,
     amount: String,
+    pub start_date: NaiveDate,
+    pub end_date: NaiveDate,
+}
+
+pub(crate) struct FormPrefill<'a> {
+    pub values: &'a BudgetEntryForm,
+    pub error: &'a str,
 }
 
 #[derive(serde::Deserialize)]

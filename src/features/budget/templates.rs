@@ -1,3 +1,4 @@
+use crate::features::budget::handlers::FormPrefill;
 use crate::features::budget::models::{BudgetEntry, EntryType};
 use chrono::NaiveDate;
 use maud::{Markup, html};
@@ -132,13 +133,22 @@ pub(crate) fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64) -
     }
 }
 
-pub(crate) fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveDate) -> Markup {
+pub(crate) fn render_entry_form(
+    id: i64,
+    start_date: NaiveDate,
+    end_date: NaiveDate,
+    prefill: Option<&FormPrefill>,
+) -> Markup {
     html! {
+       @let active = prefill.map(|p| &p.values.entry_type)
+            .unwrap_or(&EntryType::Income);
+
         form
             hx-post="/budget-entry"
             hx-target="#budget-table"
             hx-swap="outerHTML"
-            _="on htmx:afterRequest call me.reset() then send click to .peer-toggle.is-info" {
+            id="entry-form"
+            _="on htmx:afterRequest[detail.successful] call me.reset() then send click to .peer-toggle.is-info" {
             div .card {
                 div .card-content {
                     div .card-header {
@@ -151,11 +161,18 @@ pub(crate) fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveD
                         }
                     }
                     br;
+
+                    @if let Some(p) = prefill {
+                        div .notification.is-danger { (p.error) }
+                    }
+
                     // toggle buttons between income and expense
                     div .buttons.has-addons.is-centered {
                         button
-                            .button.is-info.peer-toggle type="button"
-                            autofocus
+                            .button.peer-toggle
+                            .is-info[matches!(active, EntryType::Income)]
+                            type="button"
+                            autofocus[matches!(active, EntryType::Income)]
                             _=
                                 r#"
                                     on click remove .is-danger from .peer-toggle
@@ -165,7 +182,10 @@ pub(crate) fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveD
                         { "Income" }
 
                         button
-                            .button.peer-toggle type="button"
+                            .button.peer-toggle
+                            .is-danger[matches!(active, EntryType::Expense)]
+                            autofocus[matches!(active, EntryType::Expense)]
+                            type="button"
                             _=
                                 r#"
                                     on click remove .is-info from .peer-toggle
@@ -174,8 +194,13 @@ pub(crate) fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveD
                                 "#
                         { "Expense" }
                     }
-                    input #entry-type type="hidden" name="entry_type" value="income" {}
+                    input #entry-type type="hidden" name="entry_type" value=(match active {
+                        EntryType::Income => "income",
+                        EntryType::Expense => "expense",
+                    }) {}
                     input type="hidden" name="pay_period_id" value=(id) {}
+                    input type="hidden" name="start_date" value=(start_date.to_string()) {}
+                    input type="hidden" name="end_date" value=(end_date.to_string()) {}
 
                     // fields
                     div .field {
@@ -183,6 +208,7 @@ pub(crate) fn render_entry_form(id: i64, start_date: NaiveDate, end_date: NaiveD
                             label .label for="label" { "Label" }
                             input
                                 .input type="text" name="label"
+                                value=[prefill.map(|p| p.values.label.as_str())]
                                 placeholder="Label (e.g. Rent, Salary)"
                                 required
                                 _="on invalid add .is-danger to me on input remove .is-danger from me"
