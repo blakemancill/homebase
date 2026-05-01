@@ -1,17 +1,20 @@
 use crate::errors::AppError;
 use crate::features::auth::AuthSession;
-use crate::features::budget::models::EntryType;
+use crate::features::budget::models::{
+    BudgetEntryForm, BudgetError, DeleteBudgetEntryForm, FormPrefill, PayPeriodForm,
+};
 use crate::features::budget::queries::{
     get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period,
 };
-use crate::features::budget::templates::{render_budget_dashboard, render_budget_view, render_entry_form};
+use crate::features::budget::templates::{
+    render_budget_dashboard, render_budget_view, render_entry_form,
+};
 use crate::shared::base::base_layout;
 use crate::state::ApplicationState;
 use axum::Form;
 use axum::extract::{Query, State};
 use axum::http::{HeaderMap, Uri};
 use axum::response::IntoResponse;
-use chrono::NaiveDate;
 use maud::{Markup, html};
 use rust_decimal::Decimal;
 
@@ -115,41 +118,6 @@ pub(crate) async fn delete_budget_entry(
 }
 
 // Form shapes
-#[derive(serde::Deserialize)]
-pub(crate) struct PayPeriodForm {
-    start_date: NaiveDate,
-    end_date: NaiveDate,
-}
-
-#[derive(serde::Deserialize)]
-pub(crate) struct BudgetEntryForm {
-    pub entry_type: EntryType,
-    pay_period_id: i64,
-    pub label: String,
-    amount: String,
-    pub start_date: NaiveDate,
-    pub end_date: NaiveDate,
-}
-
-pub(crate) struct FormPrefill<'a> {
-    pub values: &'a BudgetEntryForm,
-    pub error: &'a str,
-}
-
-#[derive(serde::Deserialize)]
-pub(crate) struct DeleteBudgetEntryForm {
-    id: i64,
-    pay_period_id: i64,
-}
-
-// Helpers
-#[derive(Debug, thiserror::Error)]
-enum BudgetError {
-    #[error("invalid amount: {0}")]
-    InvalidAmount(#[from] rust_decimal::Error),
-    #[error("amount out of range")]
-    AmountOutOfRange(#[from] std::num::TryFromIntError),
-}
 
 fn dollars_to_pennies(s: &str) -> Result<i64, BudgetError> {
     let d = s.parse::<Decimal>()?;

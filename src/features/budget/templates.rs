@@ -1,5 +1,4 @@
-use crate::features::budget::handlers::FormPrefill;
-use crate::features::budget::models::{BudgetEntry, EntryType};
+use crate::features::budget::models::{Bar, BudgetEntry, EntryType, FormPrefill};
 use chrono::NaiveDate;
 use maud::{Markup, html};
 
@@ -274,18 +273,31 @@ pub(crate) fn render_waterfall(entries: &[BudgetEntry]) -> Markup {
         label: "Remaining".to_string(),
         start: 0,
         end: running,
-        kind: if running >= 0 { EntryType::Income } else { EntryType::Expense },
+        kind: if running >= 0 {
+            EntryType::Income
+        } else {
+            EntryType::Expense
+        },
     });
 
     // y-axis range
-    let max_y = bars.iter().map(|b| b.start.max(b.end)).max().unwrap_or(0).max(0);
-    let min_y = bars.iter().map(|b| b.start.min(b.end)).min().unwrap_or(0).min(0);
+    let max_y = bars
+        .iter()
+        .map(|b| b.start.max(b.end))
+        .max()
+        .unwrap_or(0)
+        .max(0);
+    let min_y = bars
+        .iter()
+        .map(|b| b.start.min(b.end))
+        .min()
+        .unwrap_or(0)
+        .min(0);
     let range = (max_y - min_y).max(1) as f64;
 
     // map penny value to coordinate
-    let y_for = |pennies: i64| -> f64 {
-        padding_top + plot_height * (max_y - pennies) as f64 / range
-    };
+    let y_for =
+        |pennies: i64| -> f64 { padding_top + plot_height * (max_y - pennies) as f64 / range };
 
     let bar_width = plot_width / bars.len() as f64 * 0.6;
     let bar_step = plot_width / bars.len() as f64;
@@ -363,13 +375,6 @@ fn title_case(s: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join(" ")
-}
-
-struct Bar {
-    label: String,
-    start: i64,
-    end: i64,
-    kind: EntryType,
 }
 
 #[cfg(test)]
