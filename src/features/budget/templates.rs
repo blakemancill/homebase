@@ -6,7 +6,7 @@ use maud::{Markup, html};
 pub(crate) fn render_budget_dashboard() -> Markup {
     html! {
         style {
-            ".column.is-narrow:has(#budget-table:empty) {
+            ".budget-column:has(#budget-view:empty) {
                 display: none;
             }
             input[type='date']::-webkit-calendar-picker-indicator {
@@ -52,8 +52,7 @@ pub(crate) fn render_budget_dashboard() -> Markup {
                                 _=
                                     r#"
                                         on click set #entry-form.innerHTML to ''
-                                        then set #budget-table.innerHTML to ''
-                                        then add .is-hidden to .column.is-narrow
+                                        then set #budget-view.innerHTML to ''
                                     "#
                             { "Reset" }
                             button .card-footer-item.button.is-primary type="submit" { "Submit" }
@@ -64,13 +63,20 @@ pub(crate) fn render_budget_dashboard() -> Markup {
                 // Data Entry Form
                 div #entry-form {}
             }
-            div .column.is-narrow {
+            div .column.budget-column {
                 // Table
                 div .table-container {
-                    div #budget-table {}
+                    div #budget-view {}
                 }
             }
         }
+    }
+}
+
+pub(crate) fn render_budget_view(entries: &[BudgetEntry], pay_period_id: i64) -> Markup {
+    html! {
+        (render_waterfall(entries))
+        (render_budget_table(entries, pay_period_id))
     }
 }
 
@@ -114,8 +120,8 @@ pub(crate) fn render_budget_table(entries: &[BudgetEntry], pay_period_id: i64) -
                             td {
                                 button .delete
                                     hx-delete="/budget-entry/delete"
-                                    hx-target="#budget-table"
-                                    hx-swap="outerHTML"
+                                    hx-target="#budget-view"
+                                    hx-swap="innerHTML"
                                     hx-vals=(format!(r#"{{"id": {}, "pay_period_id": {}}}"#, entry.id, pay_period_id))
                                 {}
                             }
@@ -145,8 +151,8 @@ pub(crate) fn render_entry_form(
 
         form
             hx-post="/budget-entry"
-            hx-target="#budget-table"
-            hx-swap="outerHTML"
+            hx-target="#budget-view"
+            hx-swap="innerHTML"
             id="entry-form"
             _="on htmx:afterRequest[detail.successful] call me.reset() then send click to .peer-toggle.is-info" {
             div .card {
@@ -234,6 +240,112 @@ pub(crate) fn render_entry_form(
     }
 }
 
+pub(crate) fn render_waterfall(entries: &[BudgetEntry]) -> Markup {
+    // chart dimensions
+    let width = 600.0;
+    let height = 300.0;
+    let padding_top = 20.0;
+    let padding_bottom = 60.0;
+    let padding_x = 40.0;
+    let plot_height = height - padding_top - padding_bottom;
+    let plot_width = width - 2.0 * padding_x;
+
+    // bar builder
+    // income adds, expense subtracts. remainder is final bar
+    let mut bars: Vec<Bar> = Vec::with_capacity(entries.len() + 1);
+    let mut running: i64 = 0;
+    for entry in entries {
+        let delta = match entry.entry_type {
+            EntryType::Income => entry.amount,
+            EntryType::Expense => -entry.amount,
+        };
+        let start = running;
+        running += delta;
+        bars.push(Bar {
+            label: entry.label.clone(),
+            start,
+            end: running,
+            kind: entry.entry_type.clone(),
+        });
+    }
+
+    // final remainder bar
+    bars.push(Bar {
+        label: "Remaining".to_string(),
+        start: 0,
+        end: running,
+        kind: if running >= 0 { EntryType::Income } else { EntryType::Expense },
+    });
+
+    // y-axis range
+    let max_y = bars.iter().map(|b| b.start.max(b.end)).max().unwrap_or(0).max(0);
+    let min_y = bars.iter().map(|b| b.start.min(b.end)).min().unwrap_or(0).min(0);
+    let range = (max_y - min_y).max(1) as f64;
+
+    // map penny value to coordinate
+    let y_for = |pennies: i64| -> f64 {
+        padding_top + plot_height * (max_y - pennies) as f64 / range
+    };
+
+    let bar_width = plot_width / bars.len() as f64 * 0.6;
+    let bar_step = plot_width / bars.len() as f64;
+    let zero_y = y_for(0);
+
+    html! {
+        div .card.p-3 {
+            svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox=(format!("0 0 {} {}", width, height))
+                style="width: 100%; height: auto;"
+            {
+                // zero baseline
+                line
+                    x1=(padding_x) y1=(zero_y)
+                    x2=(padding_x + plot_width) y2=(zero_y)
+                    stroke="currentColor" stroke-width="1" opacity="0.3" {}
+
+                @for (i, bar) in bars.iter().enumerate() {
+                    @let x = padding_x + bar_step * i as f64 + (bar_step - bar_width) / 2.0;
+                    @let y_top = y_for(bar.start.max(bar.end));
+                    @let y_bot = y_for(bar.start.min(bar.end));
+                    @let h = (y_bot - y_top).max(1.0);
+                    @let fill = match bar.kind {
+                        EntryType::Income => "#48c78e",
+                        EntryType::Expense => "#f14668",
+                    };
+
+                    rect
+                        x=(x) y=(y_top)
+                        width=(bar_width) height=(h)
+                        fill=(fill) rx="2" {}
+
+                    // dollar label above each bar
+                    text
+                        x=(x + bar_width / 2.0)
+                        y=(y_top - 4.0)
+                        text-anchor="middle"
+                        font-size="11"
+                        fill="currentColor"
+                    {
+                        (format_pennies(bar.end - bar.start))
+                    }
+
+                    // category label below the chart
+                    text
+                        x=(x + bar_width / 2.0)
+                        y=(height - padding_bottom + 16.0)
+                        text-anchor="middle"
+                        font-size="11"
+                        fill="currentColor"
+                    {
+                        (title_case(&bar.label))
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn format_pennies(pennies: i64) -> String {
     let sign = if pennies < 0 { "-" } else { "" };
     let abs = pennies.unsigned_abs();
@@ -251,6 +363,13 @@ fn title_case(s: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+struct Bar {
+    label: String,
+    start: i64,
+    end: i64,
+    kind: EntryType,
 }
 
 #[cfg(test)]

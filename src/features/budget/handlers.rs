@@ -4,9 +4,7 @@ use crate::features::budget::models::EntryType;
 use crate::features::budget::queries::{
     get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period,
 };
-use crate::features::budget::templates::{
-    render_budget_dashboard, render_budget_table, render_entry_form,
-};
+use crate::features::budget::templates::{render_budget_dashboard, render_budget_view, render_entry_form};
 use crate::shared::base::base_layout;
 use crate::state::ApplicationState;
 use axum::Form;
@@ -48,9 +46,9 @@ pub(crate) async fn create_pay_period(
         // primary: goes into hx-target #entry-form
         (render_entry_form(id, form.start_date, form.end_date, None))
 
-        // oob swap: htmx puts this into #budget-table
-        div #budget-table hx-swap-oob="outerHTML" {
-            (render_budget_table(&entries, id))
+        // oob swap: htmx puts this into #budget-view
+        div #budget-view hx-swap-oob="innerHTML:#budget-view" {
+            (render_budget_view(&entries, id))
         }
     })
 }
@@ -102,7 +100,7 @@ pub(crate) async fn create_budget_entry(
 
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
 
-    Ok(render_budget_table(&entries, form.pay_period_id).into_response())
+    Ok(render_budget_view(&entries, form.pay_period_id).into_response())
 }
 
 pub(crate) async fn delete_budget_entry(
@@ -113,7 +111,7 @@ pub(crate) async fn delete_budget_entry(
     let user_id = auth_session.user.ok_or(AppError::Forbidden)?.id;
     remove_budget_entry(&state.pool, user_id, form.id).await?;
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
-    Ok(render_budget_table(&entries, form.pay_period_id))
+    Ok(render_budget_view(&entries, form.pay_period_id))
 }
 
 // Form shapes
