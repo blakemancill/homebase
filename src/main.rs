@@ -1,18 +1,9 @@
-pub mod errors;
-pub mod features;
-pub mod shared;
-pub mod state;
-
-use crate::state::ApplicationState;
 use anyhow::Context;
-use axum::Router;
-use axum_login::tower_sessions::{ExpiredDeletion, Expiry, SessionManagerLayer};
-use axum_login::{AuthManagerLayerBuilder, login_required};
-use time::Duration;
+use axum_login::tower_sessions::{ExpiredDeletion};
 use tokio::signal;
 use tokio::task::AbortHandle;
-use tower_http::trace::TraceLayer;
 use tower_sessions_sqlx_store::SqliteStore;
+use homebase::{build_app, state::ApplicationState};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -50,35 +41,6 @@ async fn main() -> anyhow::Result<()> {
         Err(e) => return Err(e.into()),
     }
     Ok(())
-}
-
-pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow::Result<Router> {
-    let session_store = SqliteStore::new(state.pool.clone());
-    session_store.migrate().await?;
-
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(secure_cookies)
-        .with_expiry(Expiry::OnInactivity(Duration::days(30)));
-
-    let backend = features::auth::Backend::new(state.pool.clone());
-    let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
-
-    let protected = Router::new()
-        .merge(features::home::routes())
-        .merge(features::budget::routes())
-        .route_layer(login_required!(
-            features::auth::Backend,
-            login_url = "/login"
-        ));
-
-    Ok(Router::new()
-        .merge(protected)
-        .merge(features::auth::routes())
-        .fallback(errors::handle_404)
-        .with_state(state)
-        .layer(auth_layer)
-        .layer(session_layer)
-        .layer(TraceLayer::new_for_http()))
 }
 
 async fn shutdown_signal(deletion_task_abort_handle: AbortHandle) {
