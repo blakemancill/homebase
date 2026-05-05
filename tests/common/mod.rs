@@ -64,7 +64,7 @@ impl TestApp {
     /// login as a given user
     pub async fn login_as(&self, username: &str) -> AuthedClient {
         let body =
-            serde_urlencoded::to_string(&[("username", username), ("password", TEST_PASSWORD)])
+            serde_urlencoded::to_string([("username", username), ("password", TEST_PASSWORD)])
                 .unwrap();
 
         let req = Request::builder()
