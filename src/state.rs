@@ -11,8 +11,11 @@ pub struct ApplicationState {
 impl ApplicationState {
     pub async fn new() -> anyhow::Result<Self> {
         let db_url = std::env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
+        Self::from_url(&db_url).await
+    }
 
-        let options = SqliteConnectOptions::from_str(&db_url)?
+    pub async fn from_url(db_url: &str) -> anyhow::Result<Self> {
+        let options = SqliteConnectOptions::from_str(db_url)?
             .foreign_keys(true)
             .journal_mode(SqliteJournalMode::Wal)
             .busy_timeout(std::time::Duration::from_secs(5));

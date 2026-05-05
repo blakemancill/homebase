@@ -20,10 +20,10 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let state = ApplicationState::new().await?;
+
     tracing::info!("database connected and migrations run");
 
     let session_store = SqliteStore::new(state.pool.clone());
-    session_store.migrate().await?;
 
     let deletion_task = tokio::task::spawn(
         session_store
@@ -31,33 +31,12 @@ async fn main() -> anyhow::Result<()> {
             .continuously_delete_expired(tokio::time::Duration::from_secs(60 * 60)),
     );
 
-    let session_layer = SessionManagerLayer::new(session_store)
-        .with_secure(true)
-        .with_expiry(Expiry::OnInactivity(Duration::days(30)));
-
-    let backend = features::auth::Backend::new(state.pool.clone());
-    let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
-
-    let protected = Router::new()
-        .merge(features::home::routes())
-        .merge(features::budget::routes())
-        .route_layer(login_required!(
-            features::auth::Backend,
-            login_url = "/login"
-        ));
-
-    let app = Router::new()
-        .merge(protected)
-        .merge(features::auth::routes())
-        .fallback(errors::handle_404)
-        .with_state(state)
-        .layer(auth_layer)
-        .layer(session_layer)
-        .layer(TraceLayer::new_for_http());
+    let app = build_app(state, true).await?;
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
         .context("failed to bind TCP listener")?;
+
     tracing::info!("listening on http://127.0.0.1:3000");
 
     axum::serve(listener, app)
@@ -71,6 +50,35 @@ async fn main() -> anyhow::Result<()> {
         Err(e) => return Err(e.into()),
     }
     Ok(())
+}
+
+pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow::Result<Router> {
+    let session_store = SqliteStore::new(state.pool.clone());
+    session_store.migrate().await?;
+
+    let session_layer = SessionManagerLayer::new(session_store)
+        .with_secure(secure_cookies)
+        .with_expiry(Expiry::OnInactivity(Duration::days(30)));
+
+    let backend = features::auth::Backend::new(state.pool.clone());
+    let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
+
+    let protected = Router::new()
+        .merge(features::home::routes())
+        .merge(features::budget::routes())
+        .route_layer(login_required!(
+            features::auth::Backend,
+            login_url = "/login"
+        ));
+
+    Ok(Router::new()
+        .merge(protected)
+        .merge(features::auth::routes())
+        .fallback(errors::handle_404)
+        .with_state(state)
+        .layer(auth_layer)
+        .layer(session_layer)
+        .layer(TraceLayer::new_for_http()))
 }
 
 async fn shutdown_signal(deletion_task_abort_handle: AbortHandle) {
