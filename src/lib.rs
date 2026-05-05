@@ -1,10 +1,10 @@
+use crate::state::ApplicationState;
 use axum::Router;
-use axum_login::{login_required, AuthManagerLayerBuilder};
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
+use axum_login::{AuthManagerLayerBuilder, login_required};
 use time::Duration;
 use tower_http::trace::TraceLayer;
 use tower_sessions_sqlx_store::SqliteStore;
-use crate::state::ApplicationState;
 
 pub mod errors;
 pub mod features;

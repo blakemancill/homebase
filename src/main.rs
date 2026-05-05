@@ -1,9 +1,9 @@
 use anyhow::Context;
-use axum_login::tower_sessions::{ExpiredDeletion};
+use axum_login::tower_sessions::ExpiredDeletion;
+use homebase::{build_app, state::ApplicationState};
 use tokio::signal;
 use tokio::task::AbortHandle;
 use tower_sessions_sqlx_store::SqliteStore;
-use homebase::{build_app, state::ApplicationState};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
