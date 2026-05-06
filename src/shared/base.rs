@@ -10,7 +10,7 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
                 meta name="viewport" content="width=device-width, initial-scale=1";
                 link rel="icon" type="image/png" href="/favicon.png" media="(prefers-color-scheme: light)";
                 link rel="icon" type="image/png" href="/favicon-white.png" media="(prefers-color-scheme: dark)";
-                link rel="manifest" href="/manifest.json";
+                link rel="manifest" href="/manifest.json" crossorigin="use-credentials";
 
                 style {
                     "
