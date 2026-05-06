@@ -6,6 +6,7 @@ use time::Duration;
 use tower_http::trace::TraceLayer;
 use tower_sessions_sqlx_store::SqliteStore;
 
+mod assets;
 pub mod errors;
 pub mod features;
 pub mod shared;
@@ -31,6 +32,7 @@ pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow:
         ));
 
     Ok(Router::new()
+        .merge(assets::routes())
         .merge(protected)
         .merge(features::auth::routes())
         .fallback(errors::handle_404)

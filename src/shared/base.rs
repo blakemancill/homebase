@@ -8,6 +8,9 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
             head {
                 meta charset="utf-8";
                 meta name="viewport" content="width=device-width, initial-scale=1";
+                link rel="icon" type="image/png" href="/favicon.png" media="(prefers-color-scheme: light)";
+                link rel="icon" type="image/png" href="/favicon-white.png" media="(prefers-color-scheme: dark)";
+                link rel="manifest" href="/manifest.json";
 
                 style {
                     "
