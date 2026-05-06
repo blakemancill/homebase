@@ -30,13 +30,13 @@ pub fn base_layout(page_title: &str, current_path: &str, content: Markup) -> Mar
                 }
 
                 // Bulma
-                link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css";
+                link rel="stylesheet" type="text/css" href="/assets/css/bulma.min.css";
 
                 // HTMX
-                script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js" {}
+                script src="/assets/js/htmx.min.js" {}
 
                 // Hyperscript
-                script src="https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.91/dist/_hyperscript.min.js" {}
+                script src="/assets/js/_hyperscript.min.js" {}
 
                 title { (page_title) }
             }

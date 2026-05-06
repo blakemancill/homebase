@@ -1,3 +1,4 @@
+use axum::extract::Path;
 use crate::state::ApplicationState;
 use axum::Router;
 use axum::http::{StatusCode, header};
@@ -14,18 +15,24 @@ pub fn routes() -> Router<ApplicationState> {
         .route("/favicon.png", get(favicon))
         .route("/favicon-white.png", get(favicon_white))
         .route("/manifest.json", get(manifest))
+        .route("/assets/{*path}", get(asset))
+
 }
 
 async fn favicon() -> impl IntoResponse {
-    serve_file("favicon.png")
+    serve_file("static/favicon.png")
 }
 
 async fn favicon_white() -> impl IntoResponse {
-    serve_file("favicon-white.png")
+    serve_file("static/favicon-white.png")
 }
 
 async fn manifest() -> impl IntoResponse {
     serve_file("manifest.json")
+}
+
+async fn asset(Path(path): Path<String>) -> impl IntoResponse {
+    serve_file(&path)
 }
 
 fn serve_file(path: &str) -> Response {
