@@ -1,6 +1,7 @@
 use anyhow::Context;
 use axum_login::tower_sessions::ExpiredDeletion;
 use homebase::{build_app, state::ApplicationState};
+use std::net::SocketAddr;
 use tokio::signal;
 use tokio::task::AbortHandle;
 use tower_sessions_sqlx_store::SqliteStore;
@@ -30,10 +31,13 @@ async fn main() -> anyhow::Result<()> {
 
     tracing::info!("listening on http://127.0.0.1:3000");
 
-    axum::serve(listener, app)
-        .with_graceful_shutdown(shutdown_signal(deletion_task.abort_handle()))
-        .await
-        .context("axum::serve failed")?;
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .with_graceful_shutdown(shutdown_signal(deletion_task.abort_handle()))
+    .await
+    .context("axum::serve failed")?;
 
     match deletion_task.await {
         Ok(result) => result?,

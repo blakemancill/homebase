@@ -3,6 +3,9 @@ use axum::Router;
 use axum_login::tower_sessions::{Expiry, SessionManagerLayer};
 use axum_login::{AuthManagerLayerBuilder, login_required};
 use time::Duration;
+use tower_governor::GovernorLayer;
+use tower_governor::governor::GovernorConfigBuilder;
+use tower_governor::key_extractor::SmartIpKeyExtractor;
 use tower_http::trace::TraceLayer;
 use tower_sessions_sqlx_store::SqliteStore;
 
@@ -23,6 +26,22 @@ pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow:
     let backend = features::auth::Backend::new(state.pool.clone());
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
 
+    let governor_conf = GovernorConfigBuilder::default()
+        .per_second(2)
+        .burst_size(5)
+        .key_extractor(SmartIpKeyExtractor)
+        .finish()
+        .unwrap();
+
+    let limiter = governor_conf.limiter().clone();
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+        loop {
+            interval.tick().await;
+            limiter.retain_recent();
+        }
+    });
+
     let protected = Router::new()
         .merge(features::home::routes())
         .merge(features::budget::routes())
@@ -39,5 +58,6 @@ pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow:
         .with_state(state)
         .layer(auth_layer)
         .layer(session_layer)
+        .layer(GovernorLayer::new(governor_conf))
         .layer(TraceLayer::new_for_http()))
 }
