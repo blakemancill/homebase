@@ -37,7 +37,7 @@ impl TestApp {
 
         let pool = state.pool.clone();
 
-        let router = build_app(state, false)
+        let router = build_app(state, false, false)
             .await
             .expect("failed to build application router");
 

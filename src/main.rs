@@ -23,7 +23,7 @@ async fn main() -> anyhow::Result<()> {
             .continuously_delete_expired(tokio::time::Duration::from_secs(60 * 60)),
     );
 
-    let app = build_app(state, true).await?;
+    let app = build_app(state, true, true).await?;
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await

@@ -15,7 +15,11 @@ pub mod features;
 pub mod shared;
 pub mod state;
 
-pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow::Result<Router> {
+pub async fn build_app(
+    state: ApplicationState,
+    secure_cookies: bool,
+    rate_limit: bool,
+) -> anyhow::Result<Router> {
     let session_store = SqliteStore::new(state.pool.clone());
     session_store.migrate().await?;
 
@@ -26,22 +30,6 @@ pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow:
     let backend = features::auth::Backend::new(state.pool.clone());
     let auth_layer = AuthManagerLayerBuilder::new(backend, session_layer.clone()).build();
 
-    let governor_conf = GovernorConfigBuilder::default()
-        .per_second(2)
-        .burst_size(5)
-        .key_extractor(SmartIpKeyExtractor)
-        .finish()
-        .unwrap();
-
-    let limiter = governor_conf.limiter().clone();
-    tokio::spawn(async move {
-        let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
-        loop {
-            interval.tick().await;
-            limiter.retain_recent();
-        }
-    });
-
     let protected = Router::new()
         .merge(features::home::routes())
         .merge(features::budget::routes())
@@ -50,14 +38,34 @@ pub async fn build_app(state: ApplicationState, secure_cookies: bool) -> anyhow:
             login_url = "/login"
         ));
 
-    Ok(Router::new()
+    let mut app = Router::new()
         .merge(assets::routes())
         .merge(protected)
         .merge(features::auth::routes())
         .fallback(errors::handle_404)
         .with_state(state)
         .layer(auth_layer)
-        .layer(session_layer)
-        .layer(GovernorLayer::new(governor_conf))
-        .layer(TraceLayer::new_for_http()))
+        .layer(session_layer);
+
+    if rate_limit {
+        let governor_conf = GovernorConfigBuilder::default()
+            .per_second(2)
+            .burst_size(5)
+            .key_extractor(SmartIpKeyExtractor)
+            .finish()
+            .unwrap();
+
+        let limiter = governor_conf.limiter().clone();
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(std::time::Duration::from_secs(60));
+            loop {
+                interval.tick().await;
+                limiter.retain_recent();
+            }
+        });
+
+        app = app.layer(GovernorLayer::new(governor_conf));
+    }
+
+    Ok(app.layer(TraceLayer::new_for_http()))
 }
