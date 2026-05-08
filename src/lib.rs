@@ -49,8 +49,8 @@ pub async fn build_app(
 
     if rate_limit {
         let governor_conf = GovernorConfigBuilder::default()
-            .per_second(2)
-            .burst_size(5)
+            .per_second(5)
+            .burst_size(20)
             .key_extractor(SmartIpKeyExtractor)
             .finish()
             .unwrap();
