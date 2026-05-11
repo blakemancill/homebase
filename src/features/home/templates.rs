@@ -1,5 +1,8 @@
+use crate::features::transactions::render_csv_upload_section;
 use maud::{Markup, html};
 
 pub fn render_index() -> Markup {
-    html! { h3 { "Hello world!" } }
+    html! {
+        (render_csv_upload_section())
+    }
 }
