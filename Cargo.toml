@@ -5,13 +5,13 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.102"
-axum = "0.8.9"
+axum = { version = "0.8.9", features = ["multipart"] }
 axum-login = "0.18.0"
 chrono = { version = "0.4.44", features = ["serde"] }
 dotenvy = "0.15.7"
 maud = { version = "0.27.0", features = ["axum"] }
 password-auth = "1.0.0"
-rust_decimal = "1.41.0"
+rust_decimal = { version = "1.41.0", features = ["serde-with-str"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_urlencoded = "0.7.1"
 sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "sqlite", "macros", "chrono", "migrate"] }
@@ -19,7 +19,7 @@ tempfile = "3.27.0"
 thiserror = "2.0.18"
 time = "0.3.47"
 tokio = { version = "1.52.0", features = ["full"] }
-tower-http = { version = "0.6.8", features = ["trace"] }
+tower-http = { version = "0.6", features = ["limit", "trace"] }
 tower-sessions = "0.15.0"
 tower-sessions-sqlx-store = { version = "0.15.0", features = ["sqlite"] }
 tracing = "0.1.44"
@@ -28,3 +28,5 @@ tower = "0.5.3"
 rust-embed = "8.11.0"
 mime_guess = "2.0.5"
 tower_governor = "0.8.0"
+csv = "1.4.0"
+regex = "1.12.3"
