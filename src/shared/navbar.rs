@@ -27,6 +27,7 @@ pub fn render_navbar(current_path: &str) -> Markup {
             div .menu {
                  ul .menu-list {
                     (nav_link("/", "Home", current_path))
+                    (nav_link("/accounts", "Accounts", current_path))
                     (nav_link("/dashboard", "Budget", current_path))
                 }
             }

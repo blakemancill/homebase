@@ -34,6 +34,7 @@ pub async fn build_app(
         .merge(features::home::routes())
         .merge(features::budget::routes())
         .merge(features::transactions::routes())
+        .merge(features::accounts::routes())
         .route_layer(login_required!(
             features::auth::Backend,
             login_url = "/login"
