@@ -1,7 +1,7 @@
 use crate::errors::AppError;
+use crate::features::transactions::models::{UsaaCsv, normalize_description};
 use axum::extract::Multipart;
-use maud::{html, Markup};
-use crate::features::transactions::models::{normalize_description, UsaaCsv};
+use maud::{Markup, html};
 
 pub(crate) async fn import(mut multipart: Multipart) -> Result<Markup, AppError> {
     while let Some(field) = multipart

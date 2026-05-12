@@ -1,8 +1,8 @@
-use std::sync::LazyLock;
 use chrono::NaiveDate;
 use regex::Regex;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer};
+use std::sync::LazyLock;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Bank {
@@ -57,13 +57,9 @@ pub(crate) struct ParsedTransaction {
     pub source_bank: Bank,
 }
 
-static TRAILING_REF: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\s*\*+\d+\s*$").unwrap()
-});
+static TRAILING_REF: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s*\*+\d+\s*$").unwrap());
 
-static WHITESPACE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"\s+").unwrap()
-});
+static WHITESPACE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s+").unwrap());
 
 pub(crate) fn normalize_description(s: &str) -> String {
     let stripped = TRAILING_REF.replace(s, "");

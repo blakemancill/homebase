@@ -1,4 +1,4 @@
-use maud::{html, Markup};
+use maud::{Markup, html};
 
 pub(crate) fn render_account_dashboard() -> Markup {
     html! {
