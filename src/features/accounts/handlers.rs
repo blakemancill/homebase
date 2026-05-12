@@ -1,7 +1,7 @@
 use axum::http::Uri;
 use maud::Markup;
 use crate::errors::AppError;
-use crate::features::accounts::templates::render_account_dashboard;
+use crate::features::accounts::templates::{render_account_dashboard, render_account_modal};
 use crate::shared::base::base_layout;
 
 pub(crate) async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
@@ -10,4 +10,8 @@ pub(crate) async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
         uri.path(),
         render_account_dashboard(),
     ))
+}
+
+pub(crate) async fn new_account() -> Result<Markup, AppError> {
+    Ok(render_account_modal())
 }
