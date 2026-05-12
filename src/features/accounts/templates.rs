@@ -9,13 +9,16 @@ pub(crate) fn render_account_dashboard() -> Markup {
                     button .button.is-primary { "Add New Account" }
                 }
             }
-            table .table.mx-auto {
-                thead {
-                    th { "Name" }
-                    th { "Bank" }
-                    th { "Opening Balance" }
-                    th { "Opening Date" }
-                    th { "Creation Date" }
+            div .card {
+                table .table.mx-auto {
+                    thead {
+                        th { "Name" }
+                        th { "Bank" }
+                        th { "Starting Balance" }
+                        th { "Estimated Balance" }
+                        th { "Opening Date" }
+                        th { "Creation Date" }
+                    }
                 }
             }
         }
