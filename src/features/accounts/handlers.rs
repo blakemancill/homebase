@@ -4,7 +4,7 @@ use crate::shared::base::base_layout;
 use axum::http::Uri;
 use maud::Markup;
 
-pub(crate) async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
+pub(crate) async fn accounts_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
         "Accounts",
         uri.path(),
