@@ -71,7 +71,11 @@ pub(crate) fn render_account_modal(error: Option<&str>) -> Markup {
                         div .field {
                             label .label { "Account Name" }
                             div .control {
-                                input .input type="text" placeholder="Account Name..." name="account_name";
+                                input .input
+                                    type="text"
+                                    required autofocus
+                                    placeholder="Account Name..."
+                                    name="account_name";
                             }
                         }
                         div .field {
@@ -87,7 +91,7 @@ pub(crate) fn render_account_modal(error: Option<&str>) -> Markup {
                         div .field {
                             label .label { "Current Balance" }
                             div .control {
-                                input .input type="text" placeholder="Balance..." name="opening_balance_string";
+                                input .input type="text" required placeholder="Balance..." name="opening_balance_string";
                             }
                         }
                     }

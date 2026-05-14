@@ -41,28 +41,12 @@ pub(crate) async fn create_account(
 
     let name = form.account_name.trim();
     if name.is_empty() || name.len() > 100 {
-        let mut headers = HeaderMap::new();
-        headers.insert("HX-Retarget", "#account-modal".parse().unwrap());
-        headers.insert("HX-Reswap", "outerHTML".parse().unwrap());
-        return Ok((
-            headers,
-            render_account_modal(Some("Account name is required (max 100 chars)")),
-        )
-            .into_response());
+        return Ok(modal_with_error("Account name is required (max 100 chars)"));
     }
 
     let pennies = match dollars_to_pennies(&form.opening_balance_string) {
         Ok(pennies) => pennies,
-        Err(_) => {
-            let mut headers = HeaderMap::new();
-            headers.insert("HX-Retarget", "#account-modal".parse().unwrap());
-            headers.insert("HX-Reswap", "outerHTML".parse().unwrap());
-            return Ok((
-                headers,
-                render_account_modal(Some("Invalid balance amount")),
-            )
-                .into_response());
-        }
+        Err(_) => return Ok(modal_with_error("Invalid balance amount")),
     };
 
     let inserted =
@@ -87,4 +71,11 @@ pub(crate) async fn create_account(
         (render_accounts_table(&accounts))
     }
     .into_response())
+}
+
+fn modal_with_error(message: &str) -> axum::response::Response {
+    let mut headers = HeaderMap::new();
+    headers.insert("HX-Retarget", "#account-modal".parse().unwrap());
+    headers.insert("HX-Reswap", "outerHTML".parse().unwrap());
+    (headers, render_account_modal(Some(message))).into_response()
 }
