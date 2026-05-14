@@ -52,15 +52,6 @@ pub(crate) struct DeleteBudgetEntryForm {
     pub(crate) pay_period_id: i64,
 }
 
-// Helpers
-#[derive(Debug, thiserror::Error)]
-pub(crate) enum BudgetError {
-    #[error("invalid amount: {0}")]
-    InvalidAmount(#[from] rust_decimal::Error),
-    #[error("amount out of range")]
-    AmountOutOfRange(#[from] std::num::TryFromIntError),
-}
-
 pub(crate) struct Bar {
     pub label: String,
     pub start: i64,

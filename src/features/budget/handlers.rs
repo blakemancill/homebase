@@ -1,7 +1,7 @@
 use crate::errors::AppError;
 use crate::features::auth::AuthSession;
 use crate::features::budget::models::{
-    BudgetEntryForm, BudgetError, DeleteBudgetEntryForm, FormPrefill, PayPeriodForm,
+    BudgetEntryForm, DeleteBudgetEntryForm, FormPrefill, PayPeriodForm,
 };
 use crate::features::budget::queries::{
     get_entries_for_period, insert_budget_entry, remove_budget_entry, upsert_pay_period,
@@ -10,13 +10,13 @@ use crate::features::budget::templates::{
     render_budget_dashboard, render_budget_view, render_entry_form,
 };
 use crate::shared::base::base_layout;
+use crate::shared::currency::dollars_to_pennies;
 use crate::state::ApplicationState;
 use axum::Form;
 use axum::extract::{Query, State};
 use axum::http::{HeaderMap, Uri};
 use axum::response::IntoResponse;
 use maud::{Markup, html};
-use rust_decimal::Decimal;
 
 pub(crate) async fn budget_dashboard(uri: Uri) -> Result<Markup, AppError> {
     Ok(base_layout(
@@ -115,12 +115,4 @@ pub(crate) async fn delete_budget_entry(
     remove_budget_entry(&state.pool, user_id, form.id).await?;
     let entries = get_entries_for_period(&state.pool, user_id, form.pay_period_id).await?;
     Ok(render_budget_view(&entries, form.pay_period_id))
-}
-
-// Form shapes
-
-fn dollars_to_pennies(s: &str) -> Result<i64, BudgetError> {
-    let d = s.parse::<Decimal>()?;
-    let pennies = (d * Decimal::from(100)).round();
-    Ok(pennies.try_into()?)
 }

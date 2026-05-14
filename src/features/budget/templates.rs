@@ -1,4 +1,5 @@
 use crate::features::budget::models::{Bar, BudgetEntry, EntryType, FormPrefill};
+use crate::shared::currency::format_pennies;
 use chrono::NaiveDate;
 use maud::{Markup, html};
 
@@ -358,12 +359,6 @@ pub(crate) fn render_waterfall(entries: &[BudgetEntry]) -> Markup {
     }
 }
 
-fn format_pennies(pennies: i64) -> String {
-    let sign = if pennies < 0 { "-" } else { "" };
-    let abs = pennies.unsigned_abs();
-    format!("{sign}${}.{:02}", abs / 100, abs % 100)
-}
-
 fn title_case(s: &str) -> String {
     s.split_whitespace()
         .map(|word| {
@@ -380,21 +375,6 @@ fn title_case(s: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn format_pennies_positive() {
-        assert_eq!(format_pennies(1050), "$10.50");
-    }
-
-    #[test]
-    fn format_pennies_negative() {
-        assert_eq!(format_pennies(-1050), "-$10.50");
-    }
-
-    #[test]
-    fn format_pennies_negative_less_than_dollar() {
-        assert_eq!(format_pennies(-5), "-$0.05");
-    }
 
     #[test]
     fn title_case_basic() {
