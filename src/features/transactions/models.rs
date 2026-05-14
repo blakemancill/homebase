@@ -5,13 +5,6 @@ use serde::{Deserialize, Deserializer};
 use std::sync::LazyLock;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Bank {
-    Usaa,
-    Ally,
-    Fidelity,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Status {
     Posted,
     Pending,
@@ -54,7 +47,7 @@ pub(crate) struct ParsedTransaction {
     pub bank_category: Option<String>,
     pub amount_pennies: i64,
     pub hash: String,
-    pub source_bank: Bank,
+    //pub source_bank: Bank,
 }
 
 static TRAILING_REF: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s*\*+\d+\s*$").unwrap());

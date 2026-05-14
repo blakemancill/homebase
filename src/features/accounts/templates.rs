@@ -1,6 +1,8 @@
+use crate::features::accounts::models::{Account, Bank};
+use crate::shared::currency::format_pennies;
 use maud::{Markup, html};
 
-pub(crate) fn render_account_dashboard() -> Markup {
+pub(crate) fn render_account_dashboard(accounts: &[Account]) -> Markup {
     html! {
         div .container.is-fluid {
             div .level {
@@ -14,14 +16,34 @@ pub(crate) fn render_account_dashboard() -> Markup {
                 }
             }
             div .card {
-                table #accounts-table .table.mx-auto {
-                    thead {
-                        th { "Name" }
-                        th { "Bank" }
-                        th { "Starting Balance" }
-                        th { "Estimated Balance" }
-                        th { "Opening Date" }
-                        th { "Creation Date" }
+                (render_accounts_table(accounts))
+            }
+        }
+    }
+}
+
+pub(crate) fn render_accounts_table(accounts: &[Account]) -> Markup {
+    html! {
+        table #accounts-table .table.mx-auto {
+            thead {
+                tr {
+                    th { "Name" }
+                    th { "Bank" }
+                    th { "Starting Balance" }
+                    th { "Estimated Balance" }
+                    th { "Opening Date" }
+                    th { "Creation Date" }
+                }
+            }
+            tbody {
+                @for account in accounts {
+                    tr {
+                        td { (account.name) }
+                        td { (account.bank.display_name()) }
+                        td { (format_pennies(account.opening_balance_pennies)) }
+                        td { (format_pennies(account.opening_balance_pennies)) } // TODO: real estimated balance
+                        td { (account.opening_date.format("%Y-%m-%d")) }
+                        td { (account.created_at.format("%Y-%m-%d")) }
                     }
                 }
             }
@@ -29,7 +51,7 @@ pub(crate) fn render_account_dashboard() -> Markup {
     }
 }
 
-pub(crate) fn render_account_modal() -> Markup {
+pub(crate) fn render_account_modal(error: Option<&str>) -> Markup {
     html! {
         div #account-modal .modal.is-active
             _="on closeModal remove #account-modal"
@@ -37,29 +59,35 @@ pub(crate) fn render_account_modal() -> Markup {
             div .modal-background _="on click trigger closeModal" {}
             div .modal-card {
                 form hx-post="/accounts" hx-target="#accounts-table" hx-swap="outerHTML"
-                    _="on htmx:afterRequest trigger closeModal"
                 {
                     header .modal-card-head {
                         p .modal-card-title { "New Account" }
                         button .delete type="button" _="on click trigger closeModal" {}
                     }
                     section .modal-card-body {
+                        @if let Some(error) = error {
+                            div .notification.is-danger { (error)}
+                        }
                         div .field {
                             label .label { "Account Name" }
                             div .control {
-                                input .input type="text" placeholder="Account Name..." name="name";
+                                input .input type="text" placeholder="Account Name..." name="account_name";
                             }
                         }
                         div .field {
                             label .label { "Bank" }
-                            div .control {
-                                input .input type="text" placeholder="Bank..." name="bank";
+                            div .select.is-fullwidth {
+                                select name="bank" {
+                                    @for bank in Bank::ALL {
+                                        option value=(bank.as_str()) { (bank.display_name()) }
+                                    }
+                                }
                             }
                         }
                         div .field {
                             label .label { "Current Balance" }
                             div .control {
-                                input .input type="text" placeholder="Balance..." name="balance";
+                                input .input type="text" placeholder="Balance..." name="opening_balance_string";
                             }
                         }
                     }
