@@ -35,6 +35,16 @@ pub(crate) struct UsaaCsv {
     pub status: Status,
 }
 
+#[derive(Debug, Deserialize)]
+pub(crate) struct AllyCsv {
+    #[serde(rename = "Date")]
+    pub date: NaiveDate,
+    #[serde(rename = "Amount", with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
+    #[serde(rename = "Description")]
+    pub description: String,
+}
+
 pub(crate) struct ParsedTransaction {
     pub account_id: i64,
     pub date: NaiveDate,
@@ -55,6 +65,18 @@ impl ParsedTransaction {
             bank_category: row.category,
             amount_pennies: decimal_to_pennies(row.amount)?,
             status: row.status,
+        })
+    }
+
+    pub(crate) fn from_ally(row: AllyCsv, account_id: i64) -> Result<Self, CurrencyError> {
+        Ok(Self {
+            account_id,
+            date: row.date,
+            description: normalize_description(&row.description),
+            raw_description: row.description,
+            bank_category: None,
+            amount_pennies: decimal_to_pennies(row.amount)?,
+            status: Status::Posted, // Ally exports only cleared transactions
         })
     }
 }

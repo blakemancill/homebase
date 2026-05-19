@@ -1,7 +1,7 @@
 use crate::errors::AppError;
-use crate::features::accounts::get_account_by_id;
+use crate::features::accounts::{Bank, get_account_by_id};
 use crate::features::auth::AuthSession;
-use crate::features::transactions::models::{ParsedTransaction, Status, UsaaCsv};
+use crate::features::transactions::models::{AllyCsv, ParsedTransaction, Status, UsaaCsv};
 use crate::features::transactions::queries::insert_transactions_batch;
 use crate::features::transactions::templates::render_import_modal;
 use crate::state::ApplicationState;
@@ -69,26 +69,59 @@ pub(crate) async fn import(
     let mut parse_errors: u64 = 0;
     let mut skipped_pending: u64 = 0;
 
-    let mut reader = csv::Reader::from_reader(bytes.as_ref());
-    for result in reader.deserialize::<UsaaCsv>() {
-        match result {
-            Ok(row) => {
-                if row.status == Status::Pending {
-                    skipped_pending += 1;
-                    continue;
-                }
-                match ParsedTransaction::from_usaa(row, account_id) {
-                    Ok(p) => parsed.push(p),
+    match account.bank {
+        Bank::Usaa => {
+            let mut reader = csv::ReaderBuilder::new()
+                .trim(csv::Trim::All)
+                .from_reader(bytes.as_ref());
+            for result in reader.deserialize::<UsaaCsv>() {
+                match result {
+                    Ok(row) => {
+                        if row.status == Status::Pending {
+                            skipped_pending += 1;
+                            continue;
+                        }
+                        match ParsedTransaction::from_usaa(row, account_id) {
+                            Ok(p) => parsed.push(p),
+                            Err(e) => {
+                                tracing::warn!(error = %e, "amount conversion failed");
+                                parse_errors += 1;
+                            }
+                        }
+                    }
                     Err(e) => {
-                        tracing::warn!(error = %e, "amount conversion failed");
+                        tracing::warn!(error = %e, "csv row parse failed");
                         parse_errors += 1;
                     }
                 }
             }
-            Err(e) => {
-                tracing::warn!(error = %e, "csv row parse failed");
-                parse_errors += 1;
+        }
+        Bank::Ally => {
+            let mut reader = csv::ReaderBuilder::new()
+                .trim(csv::Trim::All)
+                .from_reader(bytes.as_ref());
+            for result in reader.deserialize::<AllyCsv>() {
+                match result {
+                    Ok(row) => match ParsedTransaction::from_ally(row, account_id) {
+                        Ok(p) => parsed.push(p),
+                        Err(e) => {
+                            tracing::warn!(error = %e, "amount conversion failed");
+                            parse_errors += 1;
+                        }
+                    },
+                    Err(e) => {
+                        tracing::warn!(error = %e, "csv row parse failed");
+                        parse_errors += 1;
+                    }
+                }
             }
+        }
+        _ => {
+            return Ok(html! {
+                div .notification.is-warning {
+                    p { "CSV import is not yet supported for this bank." }
+                }
+            });
         }
     }
 
