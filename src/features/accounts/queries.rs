@@ -44,8 +44,8 @@ pub(crate) async fn get_account_by_id(
         account_id,
         user_id,
     )
-        .fetch_optional(pool)
-        .await
+    .fetch_optional(pool)
+    .await
 }
 
 pub(crate) async fn get_account_summaries_for_user(
@@ -75,6 +75,6 @@ pub(crate) async fn get_account_summaries_for_user(
         "#,
         user_id
     )
-        .fetch_all(pool)
-        .await
+    .fetch_all(pool)
+    .await
 }

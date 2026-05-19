@@ -1,6 +1,6 @@
 use crate::features::accounts::models::{AccountSummary, Bank};
 use crate::shared::currency::format_pennies;
-use maud::{html, Markup};
+use maud::{Markup, html};
 
 pub(crate) fn render_account_dashboard(accounts: &[AccountSummary]) -> Markup {
     html! {

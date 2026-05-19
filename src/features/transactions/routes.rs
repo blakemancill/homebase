@@ -8,6 +8,8 @@ pub fn routes() -> Router<ApplicationState> {
         .route("/accounts/{id}/import-modal", get(import_modal))
         .route(
             "/accounts/{id}/transactions/import",
-            post(import).layer(tower_http::limit::RequestBodyLimitLayer::new(5 * 1024 * 1024)),
+            post(import).layer(tower_http::limit::RequestBodyLimitLayer::new(
+                5 * 1024 * 1024,
+            )),
         )
 }

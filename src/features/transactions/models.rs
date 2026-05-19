@@ -1,4 +1,4 @@
-use crate::shared::currency::{decimal_to_pennies, CurrencyError};
+use crate::shared::currency::{CurrencyError, decimal_to_pennies};
 use chrono::NaiveDate;
 use regex::Regex;
 use rust_decimal::Decimal;

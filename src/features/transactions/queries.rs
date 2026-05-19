@@ -1,5 +1,5 @@
-use sqlx::SqlitePool;
 use crate::features::transactions::models::ParsedTransaction;
+use sqlx::SqlitePool;
 
 pub(crate) async fn insert_transactions_batch(
     pool: &SqlitePool,

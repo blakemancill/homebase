@@ -1,13 +1,13 @@
 use crate::errors::AppError;
+use crate::features::accounts::get_account_by_id;
 use crate::features::auth::AuthSession;
 use crate::features::transactions::models::{ParsedTransaction, Status, UsaaCsv};
-use crate::features::transactions::queries::{insert_transactions_batch};
+use crate::features::transactions::queries::insert_transactions_batch;
+use crate::features::transactions::templates::render_import_modal;
 use crate::state::ApplicationState;
 use axum::body::Bytes;
 use axum::extract::{Multipart, Path, State};
 use maud::{Markup, html};
-use crate::features::accounts::{get_account_by_id};
-use crate::features::transactions::templates::render_import_modal;
 
 pub(crate) async fn import_modal(
     auth_session: AuthSession,
@@ -97,7 +97,10 @@ pub(crate) async fn import(
     let duplicates = total_parsed - new_rows;
 
     tracing::info!(
-        new_rows, duplicates, skipped_pending, parse_errors,
+        new_rows,
+        duplicates,
+        skipped_pending,
+        parse_errors,
         "import complete"
     );
 

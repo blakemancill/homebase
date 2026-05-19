@@ -49,8 +49,14 @@ pub(crate) async fn create_account(
         Err(_) => return Ok(modal_with_error("Invalid balance amount")),
     };
 
-    let inserted =
-        insert_account(&state.pool, user_id, &form.account_name.trim(), form.bank, pennies).await?;
+    let inserted = insert_account(
+        &state.pool,
+        user_id,
+        &form.account_name.trim(),
+        form.bank,
+        pennies,
+    )
+    .await?;
 
     // acount name already exists
     if !inserted {
