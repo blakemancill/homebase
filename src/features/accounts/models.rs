@@ -5,9 +5,6 @@ pub struct Account {
     pub id: i64,
     pub name: String,
     pub bank: Bank,
-    pub opening_balance_pennies: i64,
-    pub opening_date: NaiveDate,
-    pub created_at: NaiveDateTime,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, sqlx::Type, serde::Deserialize, serde::Serialize)]

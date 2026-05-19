@@ -37,10 +37,7 @@ pub(crate) async fn get_account_by_id(
             SELECT
                 id as "id!",
                 name,
-                bank as "bank: Bank",
-                opening_balance_pennies,
-                opening_date as "opening_date: NaiveDate",
-                created_at as "created_at: NaiveDateTime"
+                bank as "bank: Bank"
             FROM accounts
             WHERE id = ? AND user_id = ?
         "#,
@@ -66,7 +63,10 @@ pub(crate) async fn get_account_summaries_for_user(
                 a.opening_date as "opening_date: NaiveDate",
                 a.created_at as "created_at: NaiveDateTime",
                 a.opening_balance_pennies + COALESCE(
-                    (SELECT SUM(amount_pennies) FROM transactions WHERE account_id = a.id),
+                    (SELECT SUM(amount_pennies)
+                     FROM transactions
+                     WHERE account_id = a.id
+                       AND date >= a.opening_date),
                     0
                 ) as "estimated_balance_pennies!: i64"
             FROM accounts a
