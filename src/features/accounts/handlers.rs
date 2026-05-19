@@ -1,15 +1,18 @@
 use crate::errors::AppError;
-use crate::features::accounts::models::AccountCreationForm;
-use crate::features::accounts::queries::{get_account_summaries_for_user, insert_account};
+use crate::features::accounts::get_account_by_id;
+use crate::features::accounts::models::{AccountCreationForm, ValuationForm};
+use crate::features::accounts::queries::{
+    get_account_summaries_for_user, insert_account, upsert_valuation,
+};
 use crate::features::accounts::templates::{
-    render_account_dashboard, render_account_modal, render_accounts_table,
+    render_account_dashboard, render_account_modal, render_accounts_table, render_valuation_modal,
 };
 use crate::features::auth::AuthSession;
 use crate::shared::base::base_layout;
 use crate::shared::currency::dollars_to_pennies;
 use crate::state::ApplicationState;
 use axum::Form;
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::{HeaderMap, Uri};
 use axum::response::IntoResponse;
 use maud::{Markup, html};
@@ -75,6 +78,56 @@ pub(crate) async fn create_account(
     Ok(html! {
         div hx-swap-oob="delete:#account-modal" {}
         (render_accounts_table(&accounts))
+    }
+    .into_response())
+}
+
+pub(crate) async fn valuation_modal(
+    auth_session: AuthSession,
+    State(state): State<ApplicationState>,
+    Path(account_id): Path<i64>,
+) -> Result<Markup, AppError> {
+    let user_id = auth_session.user.ok_or(AppError::Forbidden)?.id;
+
+    let account = get_account_by_id(&state.pool, user_id, account_id)
+        .await?
+        .ok_or(AppError::Forbidden)?;
+
+    Ok(render_valuation_modal(account.id, &account.name, None))
+}
+
+pub(crate) async fn record_valuation(
+    auth_session: AuthSession,
+    State(state): State<ApplicationState>,
+    Path(account_id): Path<i64>,
+    Form(form): Form<ValuationForm>,
+) -> Result<axum::response::Response, AppError> {
+    let user_id = auth_session.user.ok_or(AppError::Forbidden)?.id;
+
+    let account = get_account_by_id(&state.pool, user_id, account_id)
+        .await?
+        .ok_or(AppError::Forbidden)?;
+
+    let pennies = match dollars_to_pennies(&form.balance_string) {
+        Ok(p) => p,
+        Err(_) => {
+            let mut headers = HeaderMap::new();
+            headers.insert("HX-Retarget", "#valuation-modal".parse().unwrap());
+            headers.insert("HX-Reswap", "outerHTML".parse().unwrap());
+            return Ok((
+                headers,
+                render_valuation_modal(account.id, &account.name, Some("Invalid balance amount")),
+            )
+                .into_response());
+        }
+    };
+
+    upsert_valuation(&state.pool, account_id, pennies).await?;
+
+    let accounts = get_account_summaries_for_user(&state.pool, user_id).await?;
+    Ok(html! {
+    div hx-swap-oob="delete:#valuation-modal" {}
+    (render_accounts_table(&accounts))
     }
     .into_response())
 }

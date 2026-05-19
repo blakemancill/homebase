@@ -43,6 +43,11 @@ pub struct AccountCreationForm {
     pub opening_balance_string: String,
 }
 
+#[derive(serde::Deserialize)]
+pub struct ValuationForm {
+    pub balance_string: String,
+}
+
 #[derive(sqlx::FromRow)]
 pub struct AccountSummary {
     pub id: i64,

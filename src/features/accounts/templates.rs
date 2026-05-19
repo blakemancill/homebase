@@ -46,11 +46,22 @@ pub(crate) fn render_accounts_table(accounts: &[AccountSummary]) -> Markup {
                         td { (account.opening_date.format("%Y-%m-%d")) }
                         td { (account.created_at.format("%Y-%m-%d")) }
                         td {
-                            button .button.is-small.is-info
-                                hx-get=(format!("/accounts/{}/import-modal", account.id))
-                                hx-target="body"
-                                hx-swap="beforeend"
-                            { "Import CSV" }
+                            @match account.bank {
+                                Bank::Fidelity => {
+                                    button .button.is-small.is-success
+                                        hx-get=(format!("/accounts/{}/valuation-modal", account.id))
+                                        hx-target="body"
+                                        hx-swap="beforeend"
+                                    { "Update Balance" }
+                                }
+                                _ => {
+                                    button .button.is-small.is-info
+                                        hx-get=(format!("/accounts/{}/import-modal", account.id))
+                                        hx-target="body"
+                                        hx-swap="beforeend"
+                                    { "Import CSV" }
+                                }
+                            }
                         }
                     }
                 }
@@ -100,6 +111,55 @@ pub(crate) fn render_account_modal(error: Option<&str>) -> Markup {
                             label .label { "Current Balance" }
                             div .control {
                                 input .input type="text" required placeholder="Balance..." name="opening_balance_string";
+                            }
+                        }
+                    }
+                    footer .modal-card-foot {
+                        div .buttons {
+                            button .button.is-success type="submit" { "Save" }
+                            button .button type="button" _="on click trigger closeModal" { "Cancel" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub(crate) fn render_valuation_modal(
+    account_id: i64,
+    account_name: &str,
+    error: Option<&str>,
+) -> Markup {
+    html! {
+        div #valuation-modal .modal.is-active
+            _="on closeModal remove #valuation-modal"
+        {
+            div .modal-background _="on click trigger closeModal" {}
+            div .modal-card {
+                form
+                    hx-post=(format!("/accounts/{}/valuation", account_id))
+                    hx-target="#accounts-table"
+                    hx-swap="outerHTML"
+                {
+                    header .modal-card-head {
+                        p .modal-card-title { "Update Balance for " (account_name) }
+                        button .delete type="button" _="on click trigger closeModal" {}
+                    }
+                    section .modal-card-body {
+                        @if let Some(error) = error {
+                            div .notification.is-danger { (error) }
+                        }
+                        div .field {
+                            label .label { "Balance" }
+                            div .control {
+                                input .input
+                                    type="text"
+                                    name="balance_string"
+                                    required
+                                    autofocus
+                                    placeholder="e.g. 47312.45"
+                                    {}
                             }
                         }
                     }

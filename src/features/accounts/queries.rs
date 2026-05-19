@@ -62,12 +62,11 @@ pub(crate) async fn get_account_summaries_for_user(
                 a.opening_balance_pennies,
                 a.opening_date as "opening_date: NaiveDate",
                 a.created_at as "created_at: NaiveDateTime",
-                a.opening_balance_pennies + COALESCE(
-                    (SELECT SUM(amount_pennies)
-                     FROM transactions
-                     WHERE account_id = a.id
-                       AND date >= a.opening_date),
-                    0
+                COALESCE(
+                    (SELECT v.value_pennies FROM valuations v WHERE v.account_id = a.id ORDER BY v.date DESC LIMIT 1),
+                    a.opening_balance_pennies + COALESCE(
+                        (SELECT SUM(t.amount_pennies) FROM transactions t WHERE t.account_id = a.id AND t.date >= a.opening_date), 0
+                    )
                 ) as "estimated_balance_pennies!: i64"
             FROM accounts a
             WHERE a.user_id = ?
@@ -77,4 +76,23 @@ pub(crate) async fn get_account_summaries_for_user(
     )
     .fetch_all(pool)
     .await
+}
+
+pub(crate) async fn upsert_valuation(
+    pool: &SqlitePool,
+    account_id: i64,
+    value_pennies: i64,
+) -> sqlx::Result<()> {
+    sqlx::query!(
+        r#"
+            INSERT INTO valuations (account_id, value_pennies)
+            VALUES (?, ?)
+            ON CONFLICT (account_id, date) DO UPDATE SET value_pennies = excluded.value_pennies
+        "#,
+        account_id,
+        value_pennies
+    )
+    .execute(pool)
+    .await?;
+    Ok(())
 }
