@@ -48,3 +48,43 @@ pub(crate) async fn get_accounts_for_user(
     .fetch_all(pool)
     .await
 }
+
+pub(crate) async fn get_account_by_id(
+    pool: &SqlitePool,
+    user_id: i64,
+    account_id: i64,
+) -> sqlx::Result<Option<Account>> {
+    sqlx::query_as!(
+        Account,
+        r#"
+            SELECT
+                id as "id!",
+                name,
+                bank as "bank: Bank",
+                opening_balance_pennies,
+                opening_date as "opening_date: NaiveDate",
+                created_at as "created_at: NaiveDateTime"
+            FROM accounts
+            WHERE id = ? AND user_id = ?
+        "#,
+        account_id,
+        user_id,
+    )
+        .fetch_optional(pool)
+        .await
+}
+
+pub(crate) async fn account_belongs_to_user(
+    pool: &SqlitePool,
+    user_id: i64,
+    account_id: i64,
+) -> sqlx::Result<bool> {
+    let count: i64 = sqlx::query_scalar!(
+        r#"SELECT COUNT(*) as "c!: i64" FROM accounts WHERE id = ? AND user_id = ?"#,
+        account_id,
+        user_id,
+    )
+        .fetch_one(pool)
+        .await?;
+    Ok(count > 0)
+}

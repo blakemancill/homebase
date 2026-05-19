@@ -44,6 +44,13 @@ pub(crate) fn render_accounts_table(accounts: &[Account]) -> Markup {
                         td { (format_pennies(account.opening_balance_pennies)) } // TODO: real estimated balance
                         td { (account.opening_date.format("%Y-%m-%d")) }
                         td { (account.created_at.format("%Y-%m-%d")) }
+                        td {
+                            button .button.is-small.is-info
+                                hx-get=(format!("/accounts/{}/import-modal", account.id))
+                                hx-target="body"
+                                hx-swap="beforeend"
+                            { "Import CSV" }
+                        }
                     }
                 }
             }

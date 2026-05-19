@@ -1,8 +1,8 @@
-use crate::features::transactions::render_csv_upload_section;
-use maud::{Markup, html};
+use maud::{html, Markup};
 
 pub fn render_index() -> Markup {
     html! {
-        (render_csv_upload_section())
+        h1 .title { "Welcome" }
+        p { "Use the sidebar to navigate." }
     }
 }

@@ -31,3 +31,46 @@ pub fn render_csv_upload_section() -> Markup {
         }
     }
 }
+
+pub(crate) fn render_import_modal(account_id: i64, account_name: &str) -> Markup {
+    html! {
+        div #import-modal .modal.is-active
+            _="on closeModal remove #import-modal"
+        {
+            div .modal-background _="on click trigger closeModal" {}
+            div .modal-card {
+                form
+                    hx-post=(format!("/accounts/{}/transactions/import", account_id))
+                    hx-target="#import-result"
+                    hx-swap="innerHTML"
+                    hx-encoding="multipart/form-data"
+                {
+                    header .modal-card-head {
+                        p .modal-card-title { "Import to " (account_name) }
+                        button .delete type="button" _="on click trigger closeModal" {}
+                    }
+                    section .modal-card-body {
+                        div #import-result {}
+                        div .file.is-centered.is-boxed {
+                            label .file-label {
+                                input .file-input
+                                    type="file" name="csv"
+                                    accept=".csv,text/csv"
+                                    required {}
+                                span .file-cta {
+                                    span .file-label { "Choose CSV..." }
+                                }
+                            }
+                        }
+                    }
+                    footer .modal-card-foot {
+                        div .buttons {
+                            button .button.is-primary type="submit" { "Upload" }
+                            button .button type="button" _="on click trigger closeModal" { "Close" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

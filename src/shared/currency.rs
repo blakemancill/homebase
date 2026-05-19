@@ -8,10 +8,14 @@ pub enum CurrencyError {
     AmountOutOfRange(#[from] std::num::TryFromIntError),
 }
 
-pub fn dollars_to_pennies(s: &str) -> Result<i64, CurrencyError> {
-    let d = s.parse::<Decimal>()?;
+pub fn decimal_to_pennies(d: Decimal) -> Result<i64, CurrencyError> {
     let pennies = (d * Decimal::from(100)).round();
     Ok(pennies.try_into()?)
+}
+
+pub fn dollars_to_pennies(s: &str) -> Result<i64, CurrencyError> {
+    let d = s.parse::<Decimal>()?;
+    decimal_to_pennies(d)
 }
 
 pub fn format_pennies(pennies: i64) -> String {
