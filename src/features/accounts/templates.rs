@@ -1,8 +1,8 @@
-use crate::features::accounts::models::{Account, Bank};
+use crate::features::accounts::models::{AccountSummary, Bank};
 use crate::shared::currency::format_pennies;
-use maud::{Markup, html};
+use maud::{html, Markup};
 
-pub(crate) fn render_account_dashboard(accounts: &[Account]) -> Markup {
+pub(crate) fn render_account_dashboard(accounts: &[AccountSummary]) -> Markup {
     html! {
         div .container.is-fluid {
             div .level {
@@ -22,7 +22,7 @@ pub(crate) fn render_account_dashboard(accounts: &[Account]) -> Markup {
     }
 }
 
-pub(crate) fn render_accounts_table(accounts: &[Account]) -> Markup {
+pub(crate) fn render_accounts_table(accounts: &[AccountSummary]) -> Markup {
     html! {
         table #accounts-table .table.mx-auto {
             thead {
@@ -42,7 +42,7 @@ pub(crate) fn render_accounts_table(accounts: &[Account]) -> Markup {
                         td { (account.name) }
                         td { (account.bank.display_name()) }
                         td { (format_pennies(account.opening_balance_pennies)) }
-                        td { (format_pennies(account.opening_balance_pennies)) } // TODO: real estimated balance
+                        td { (format_pennies(account.estimated_balance_pennies)) }
                         td { (account.opening_date.format("%Y-%m-%d")) }
                         td { (account.created_at.format("%Y-%m-%d")) }
                         td {

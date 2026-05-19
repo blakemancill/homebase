@@ -1,6 +1,6 @@
 use crate::errors::AppError;
 use crate::features::accounts::models::AccountCreationForm;
-use crate::features::accounts::queries::{get_accounts_for_user, insert_account};
+use crate::features::accounts::queries::{get_account_summaries_for_user, insert_account};
 use crate::features::accounts::templates::{
     render_account_dashboard, render_account_modal, render_accounts_table,
 };
@@ -20,7 +20,7 @@ pub(crate) async fn accounts_dashboard(
     uri: Uri,
 ) -> Result<Markup, AppError> {
     let user_id = auth_session.user.ok_or(AppError::Forbidden)?.id;
-    let accounts = get_accounts_for_user(&state.pool, user_id).await?;
+    let accounts = get_account_summaries_for_user(&state.pool, user_id).await?;
     Ok(base_layout(
         "Accounts",
         uri.path(),
@@ -65,7 +65,7 @@ pub(crate) async fn create_account(
     }
 
     // Success: delete the modal, swap table into container
-    let accounts = get_accounts_for_user(&state.pool, user_id).await?;
+    let accounts = get_account_summaries_for_user(&state.pool, user_id).await?;
     Ok(html! {
         div hx-swap-oob="delete:#account-modal" {}
         (render_accounts_table(&accounts))

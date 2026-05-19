@@ -68,16 +68,11 @@ pub(crate) async fn import(
     let mut parsed: Vec<ParsedTransaction> = Vec::new();
     let mut parse_errors: u64 = 0;
     let mut skipped_pending: u64 = 0;
-    let mut skipped_transfers: u64 = 0;
 
     let mut reader = csv::Reader::from_reader(bytes.as_ref());
     for result in reader.deserialize::<UsaaCsv>() {
         match result {
             Ok(row) => {
-                if row.category.as_deref() == Some("Transfer") {
-                    skipped_transfers += 1;
-                    continue;
-                }
                 if row.status == Status::Pending {
                     skipped_pending += 1;
                     continue;
@@ -102,7 +97,7 @@ pub(crate) async fn import(
     let duplicates = total_parsed - new_rows;
 
     tracing::info!(
-        new_rows, duplicates, skipped_pending, skipped_transfers, parse_errors,
+        new_rows, duplicates, skipped_pending, parse_errors,
         "import complete"
     );
 
@@ -113,7 +108,6 @@ pub(crate) async fn import(
                 li { (new_rows) " new transactions" }
                 @if duplicates > 0      { li { (duplicates) " already imported (skipped)" } }
                 @if skipped_pending > 0 { li { (skipped_pending) " pending (will import when posted)" } }
-                @if skipped_transfers > 0 { li { (skipped_transfers) " transfers between your accounts (skipped)" } }
                 @if parse_errors > 0    { li .has-text-danger { (parse_errors) " rows failed to parse — see logs" } }
             }
         }

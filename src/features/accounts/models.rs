@@ -45,3 +45,14 @@ pub struct AccountCreationForm {
     pub bank: Bank,
     pub opening_balance_string: String,
 }
+
+#[derive(sqlx::FromRow)]
+pub struct AccountSummary {
+    pub id: i64,
+    pub name: String,
+    pub bank: Bank,
+    pub opening_balance_pennies: i64,
+    pub opening_date: NaiveDate,
+    pub created_at: NaiveDateTime,
+    pub estimated_balance_pennies: i64,
+}
