@@ -52,7 +52,7 @@ pub(crate) async fn create_account(
     let inserted = insert_account(
         &state.pool,
         user_id,
-        &form.account_name.trim(),
+        form.account_name.trim(),
         form.bank,
         pennies,
     )
