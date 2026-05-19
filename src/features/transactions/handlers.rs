@@ -6,7 +6,7 @@ use crate::state::ApplicationState;
 use axum::body::Bytes;
 use axum::extract::{Multipart, Path, State};
 use maud::{Markup, html};
-use crate::features::accounts::{account_belongs_to_user, get_account_by_id};
+use crate::features::accounts::{get_account_by_id};
 use crate::features::transactions::templates::render_import_modal;
 
 pub(crate) async fn import_modal(

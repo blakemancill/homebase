@@ -27,7 +27,6 @@ impl<'de> Deserialize<'de> for Status {
 #[serde(rename_all = "PascalCase")]
 pub(crate) struct UsaaCsv {
     pub date: NaiveDate,
-    pub description: String,
     #[serde(rename = "Original Description")]
     pub original_description: String,
     pub category: Option<String>,
