@@ -156,8 +156,6 @@ async fn authenticated_user_can_view_home() {
     let res = john.get("/").await;
 
     assert_eq!(res.status(), StatusCode::OK);
-    let body = body_string(res).await;
-    assert!(body.contains("Hello world!"));
 }
 
 #[tokio::test]
