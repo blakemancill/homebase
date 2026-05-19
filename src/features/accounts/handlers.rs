@@ -50,7 +50,7 @@ pub(crate) async fn create_account(
     };
 
     let inserted =
-        insert_account(&state.pool, user_id, &form.account_name, form.bank, pennies).await?;
+        insert_account(&state.pool, user_id, &form.account_name.trim(), form.bank, pennies).await?;
 
     // acount name already exists
     if !inserted {

@@ -33,6 +33,7 @@ pub(crate) fn render_accounts_table(accounts: &[Account]) -> Markup {
                     th { "Estimated Balance" }
                     th { "Opening Date" }
                     th { "Creation Date" }
+                    th { "Actions" }
                 }
             }
             tbody {
