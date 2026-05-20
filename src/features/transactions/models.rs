@@ -4,6 +4,7 @@ use regex::Regex;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer};
 use std::sync::LazyLock;
+use serde::de::DeserializeOwned;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, sqlx::Type)]
 #[sqlx(rename_all = "lowercase")]
@@ -46,45 +47,93 @@ pub(crate) struct AllyCsv {
 }
 
 pub(crate) struct ParsedTransaction {
-    pub account_id: i64,
-    pub date: NaiveDate,
-    pub description: String,
-    pub raw_description: String,
-    pub bank_category: Option<String>,
-    pub amount_pennies: i64,
-    pub status: Status,
-}
-
-impl ParsedTransaction {
-    pub(crate) fn from_usaa(row: UsaaCsv, account_id: i64) -> Result<Self, CurrencyError> {
-        Ok(Self {
-            account_id,
-            date: row.date,
-            description: normalize_description(&row.original_description),
-            raw_description: row.original_description,
-            bank_category: row.category,
-            amount_pennies: decimal_to_pennies(row.amount)?,
-            status: row.status,
-        })
-    }
-
-    pub(crate) fn from_ally(row: AllyCsv, account_id: i64) -> Result<Self, CurrencyError> {
-        Ok(Self {
-            account_id,
-            date: row.date,
-            description: normalize_description(&row.description),
-            raw_description: row.description,
-            bank_category: None,
-            amount_pennies: decimal_to_pennies(row.amount)?,
-            status: Status::Posted, // Ally exports only cleared transactions
-        })
-    }
+    pub(crate) account_id: i64,
+    pub(crate) date: NaiveDate,
+    pub(crate) description: String,
+    pub(crate) raw_description: String,
+    pub(crate) bank_category: Option<String>,
+    pub(crate) amount_pennies: i64,
+    pub(crate) status: Status,
 }
 
 static TRAILING_REF: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s*\*+\d+\s*$").unwrap());
 static WHITESPACE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\s+").unwrap());
 
-pub(crate) fn normalize_description(s: &str) -> String {
+fn normalize_description(s: &str) -> String {
     let stripped = TRAILING_REF.replace(s, "");
     WHITESPACE.replace_all(&stripped, " ").trim().to_uppercase()
+}
+
+pub(crate) enum RowOutcome {
+    Transaction(ParsedTransaction),
+    SkippedPending,
+}
+
+pub(crate) trait BankCsv: DeserializeOwned {
+    fn into_outcome(self, account_id: i64) -> Result<RowOutcome, CurrencyError>;
+}
+
+impl BankCsv for UsaaCsv {
+    fn into_outcome(self, account_id: i64) -> Result<RowOutcome, CurrencyError> {
+        if self.status == Status::Pending {
+            return Ok(RowOutcome::SkippedPending);
+        }
+        Ok(RowOutcome::Transaction(ParsedTransaction {
+            account_id,
+            date: self.date,
+            description: normalize_description(&self.original_description),
+            raw_description: self.original_description,
+            bank_category: self.category,
+            amount_pennies: decimal_to_pennies(self.amount)?,
+            status: self.status,
+        }))
+    }
+}
+
+impl BankCsv for AllyCsv {
+    fn into_outcome(self, account_id: i64) -> Result<RowOutcome, CurrencyError> {
+        Ok(RowOutcome::Transaction(ParsedTransaction {
+            account_id,
+            date: self.date,
+            description: normalize_description(&self.description),
+            raw_description: self.description,
+            bank_category: None,
+            amount_pennies: decimal_to_pennies(self.amount)?,
+            status: Status::Posted, // ally only exports cleared transactions
+        }))
+    }
+}
+
+#[derive(Default)]
+pub(crate) struct ParseSummary {
+    pub(crate) parsed: Vec<ParsedTransaction>,
+    pub(crate) parse_errors: u64,
+    pub(crate) skipped_pending: u64,
+}
+
+pub(crate) fn parse_csv<T: BankCsv>(bytes: &[u8], account_id: i64) -> ParseSummary {
+    let mut reader = csv::ReaderBuilder::new()
+        .trim(csv::Trim::All)
+        .from_reader(bytes);
+
+    let mut summary = ParseSummary::default();
+
+    for result in reader.deserialize::<T>() {
+        match result {
+            Ok(row) => match row.into_outcome(account_id) {
+                Ok(RowOutcome::Transaction(t)) => summary.parsed.push(t),
+                Ok(RowOutcome::SkippedPending) => summary.skipped_pending += 1,
+                Err(e) => {
+                    tracing::warn!(error = %e, "amount conversion failed");
+                    summary.parse_errors += 1;
+                }
+            },
+            Err(e) => {
+                tracing::warn!(error = %e, "csv row parse failed");
+                summary.parse_errors += 1;
+            }
+        }
+    }
+
+    summary
 }
