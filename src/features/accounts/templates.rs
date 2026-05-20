@@ -1,6 +1,7 @@
 use crate::features::accounts::models::{AccountSummary, Bank, ImportStrategy};
 use crate::shared::currency::format_pennies;
 use maud::{Markup, html};
+use strum::IntoEnumIterator;
 
 pub(crate) fn render_account_dashboard(accounts: &[AccountSummary]) -> Markup {
     html! {
@@ -98,7 +99,7 @@ pub(crate) fn render_account_modal(error: Option<&str>) -> Markup {
                             label .label { "Bank" }
                             div .select.is-fullwidth {
                                 select name="bank" {
-                                    @for bank in Bank::ALL {
+                                    @for bank in Bank::iter() {
                                         option value=(bank.as_str()) { (bank.display_name()) }
                                     }
                                 }

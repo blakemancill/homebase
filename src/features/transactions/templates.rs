@@ -1,4 +1,4 @@
-use maud::{html, Markup};
+use maud::{Markup, html};
 
 pub(crate) fn render_import_modal(account_id: i64, account_name: &str) -> Markup {
     html! {

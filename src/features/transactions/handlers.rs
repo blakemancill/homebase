@@ -1,7 +1,7 @@
 use crate::errors::AppError;
 use crate::features::accounts::{Bank, get_account_by_id};
 use crate::features::auth::AuthSession;
-use crate::features::transactions::models::{parse_csv, AllyCsv, UsaaCsv};
+use crate::features::transactions::models::{AllyCsv, UsaaCsv, parse_csv};
 use crate::features::transactions::queries::insert_transactions_batch;
 use crate::features::transactions::templates::render_import_modal;
 use crate::state::ApplicationState;
@@ -50,12 +50,12 @@ pub(crate) async fn import(
     let summary = match account.bank {
         Bank::Usaa => parse_csv::<UsaaCsv>(bytes.as_ref(), account_id),
         Bank::Ally => parse_csv::<AllyCsv>(bytes.as_ref(), account_id),
-        Bank::Fidelity => {
+        Bank::Fidelity | Bank::HealthEquity | Bank::Inspira | Bank::CharlesSchwab => {
             return Ok(html! {
-            div .notification.is-warning {
-                p { "This account uses manual balance updates, not CSV import." }
-            }
-        });
+                div .notification.is-warning {
+                    p { "This account uses manual balance updates, not CSV import." }
+                }
+            });
         }
     };
 
@@ -64,7 +64,8 @@ pub(crate) async fn import(
     let duplicates = total_parsed - new_rows;
 
     tracing::info!(
-        new_rows, duplicates,
+        new_rows,
+        duplicates,
         skipped_pending = summary.skipped_pending,
         parse_errors = summary.parse_errors,
         "import complete"

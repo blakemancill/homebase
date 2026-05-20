@@ -2,9 +2,9 @@ use crate::shared::currency::{CurrencyError, decimal_to_pennies};
 use chrono::NaiveDate;
 use regex::Regex;
 use rust_decimal::Decimal;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer};
 use std::sync::LazyLock;
-use serde::de::DeserializeOwned;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, sqlx::Type)]
 #[sqlx(rename_all = "lowercase")]
