@@ -1,4 +1,4 @@
-use crate::features::accounts::models::{AccountSummary, Bank};
+use crate::features::accounts::models::{AccountSummary, Bank, ImportStrategy};
 use crate::shared::currency::format_pennies;
 use maud::{Markup, html};
 
@@ -46,22 +46,19 @@ pub(crate) fn render_accounts_table(accounts: &[AccountSummary]) -> Markup {
                         td { (account.opening_date.format("%Y-%m-%d")) }
                         td { (account.created_at.format("%Y-%m-%d")) }
                         td {
-                            @match account.bank {
-                                Bank::Fidelity => {
-                                    button .button.is-small.is-success
-                                        hx-get=(format!("/accounts/{}/valuation-modal", account.id))
-                                        hx-target="body"
-                                        hx-swap="beforeend"
-                                    { "Update Balance" }
-                                }
-                                _ => {
-                                    button .button.is-small.is-info
-                                        hx-get=(format!("/accounts/{}/import-modal", account.id))
-                                        hx-target="body"
-                                        hx-swap="beforeend"
-                                    { "Import CSV" }
-                                }
-                            }
+                            @let (color, modal, label) = match account.bank.import_strategy() {
+                                ImportStrategy::ManualValuation =>
+                                    ("is-success", "valuation-modal", "Update Balance"),
+                                ImportStrategy::Csv =>
+                                    ("is-info", "import-modal", "Import Csv"),
+                            };
+
+                            button
+                                class=(format!("button is-small {color}"))
+                                hx-get=(format!("/accounts/{}/{}", account.id, modal))
+                                hx-target="body"
+                                hx-swap="beforeend"
+                            { (label) }
                         }
                     }
                 }

@@ -16,6 +16,11 @@ pub enum Bank {
     Fidelity,
 }
 
+pub enum ImportStrategy {
+    Csv,
+    ManualValuation,
+}
+
 impl Bank {
     pub const ALL: &'static [Bank] = &[Bank::Usaa, Bank::Ally, Bank::Fidelity];
 
@@ -32,6 +37,13 @@ impl Bank {
             Bank::Usaa => "USAA",
             Bank::Ally => "Ally",
             Bank::Fidelity => "Fidelity",
+        }
+    }
+
+    pub fn import_strategy(&self) -> ImportStrategy {
+        match self {
+            Bank::Usaa | Bank::Ally => ImportStrategy::Csv,
+            Bank::Fidelity => ImportStrategy::ManualValuation,
         }
     }
 }
