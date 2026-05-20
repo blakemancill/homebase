@@ -62,13 +62,9 @@ pub(crate) async fn get_account_summaries_for_user(
                 a.opening_balance_pennies,
                 a.opening_date as "opening_date: NaiveDate",
                 a.created_at as "created_at: NaiveDateTime",
-                COALESCE(
-                    (SELECT v.value_pennies FROM valuations v WHERE v.account_id = a.id ORDER BY v.date DESC LIMIT 1),
-                    a.opening_balance_pennies + COALESCE(
-                        (SELECT SUM(t.amount_pennies) FROM transactions t WHERE t.account_id = a.id AND t.date >= a.opening_date), 0
-                    )
-                ) as "estimated_balance_pennies!: i64"
+                b.estimated_balance_pennies as "estimated_balance_pennies!: i64"
             FROM accounts a
+            JOIN account_balances b ON b.account_id = a.id
             WHERE a.user_id = ?
             ORDER BY a.created_at DESC
         "#,
@@ -95,4 +91,17 @@ pub(crate) async fn upsert_valuation(
     .execute(pool)
     .await?;
     Ok(())
+}
+
+pub async fn get_net_worth_for_user(pool: &SqlitePool, user_id: i64) -> sqlx::Result<i64> {
+    sqlx::query_scalar!(
+        r#"
+            SELECT COALESCE(SUM(estimated_balance_pennies), 0) AS "net_worth!: i64"
+            FROM account_balances
+            WHERE user_id = ?
+        "#,
+        user_id
+    )
+    .fetch_one(pool)
+    .await
 }
