@@ -20,6 +20,7 @@ pub enum Bank {
     HealthEquity,
     Inspira,
     CharlesSchwab,
+    PcsRetirement,
 }
 
 pub enum ImportStrategy {
@@ -36,6 +37,7 @@ impl Bank {
             Bank::HealthEquity => "healthequity",
             Bank::Inspira => "inspira",
             Bank::CharlesSchwab => "charlesschwab",
+            Bank::PcsRetirement => "pcsretirement",
         }
     }
 
@@ -47,15 +49,18 @@ impl Bank {
             Bank::HealthEquity => "Health Equity",
             Bank::Inspira => "Inspira",
             Bank::CharlesSchwab => "Charles Schwab",
+            Bank::PcsRetirement => "PCS Retirement",
         }
     }
 
     pub fn import_strategy(&self) -> ImportStrategy {
         match self {
             Bank::Usaa | Bank::Ally => ImportStrategy::Csv,
-            Bank::Fidelity | Bank::HealthEquity | Bank::Inspira | Bank::CharlesSchwab => {
-                ImportStrategy::ManualValuation
-            }
+            Bank::Fidelity
+            | Bank::HealthEquity
+            | Bank::Inspira
+            | Bank::CharlesSchwab
+            | Bank::PcsRetirement => ImportStrategy::ManualValuation,
         }
     }
 }

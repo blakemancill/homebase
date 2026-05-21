@@ -50,7 +50,11 @@ pub(crate) async fn import(
     let summary = match account.bank {
         Bank::Usaa => parse_csv::<UsaaCsv>(bytes.as_ref(), account_id),
         Bank::Ally => parse_csv::<AllyCsv>(bytes.as_ref(), account_id),
-        Bank::Fidelity | Bank::HealthEquity | Bank::Inspira | Bank::CharlesSchwab => {
+        Bank::Fidelity
+        | Bank::HealthEquity
+        | Bank::Inspira
+        | Bank::CharlesSchwab
+        | Bank::PcsRetirement => {
             return Ok(html! {
                 div .notification.is-warning {
                     p { "This account uses manual balance updates, not CSV import." }
