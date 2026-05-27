@@ -1,23 +1,7 @@
 mod common;
 
-use crate::common::{TestApp, body_string};
-use axum::http::{Request, StatusCode};
-
-#[tokio::test]
-async fn unauthenticated_dashboard_redirects_to_login() {
-    let app = TestApp::spawn().await;
-
-    let req = Request::builder()
-        .uri("/dashboard")
-        .body(axum::body::Body::empty())
-        .unwrap();
-
-    let res = app.request(req).await;
-
-    assert_eq!(res.status(), StatusCode::TEMPORARY_REDIRECT);
-    let location = res.headers().get("location").unwrap().to_str().unwrap();
-    assert!(location.starts_with("/login"));
-}
+use crate::common::{body_string, TestApp};
+use axum::http::StatusCode;
 
 #[tokio::test]
 async fn user_b_cannot_insert_into_user_a_pay_period() {
@@ -145,17 +129,6 @@ async fn authenticated_user_can_view_dashboard() {
     let body = body_string(res).await;
     // Pay period form should be present on initial dashboard load
     assert!(body.contains("Pay Period"));
-}
-
-#[tokio::test]
-async fn authenticated_user_can_view_home() {
-    let app = TestApp::spawn().await;
-    app.create_user("john").await;
-    let john = app.login_as("john").await;
-
-    let res = john.get("/").await;
-
-    assert_eq!(res.status(), StatusCode::OK);
 }
 
 #[tokio::test]

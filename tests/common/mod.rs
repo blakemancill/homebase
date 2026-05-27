@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub mod budget;
 
 use axum::Router;
